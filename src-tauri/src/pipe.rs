@@ -763,6 +763,34 @@ mod tests {
         }
     }
 
+    /// An access list as Windows spells it back: an account it has a short name
+    /// for is written by that name (the built-in Administrator's SID becomes
+    /// "LA"), so what is expected goes through Windows too before it is compared.
+    #[cfg(windows)]
+    fn as_windows_spells(sddl: &str) -> String {
+        use windows::core::{HSTRING, PWSTR};
+        use windows::Win32::Foundation::{LocalFree, HLOCAL};
+        use windows::Win32::Security::Authorization::{
+            ConvertSecurityDescriptorToStringSecurityDescriptorW, ConvertStringSecurityDescriptorToSecurityDescriptorW,
+            SDDL_REVISION_1,
+        };
+        use windows::Win32::Security::{DACL_SECURITY_INFORMATION, PSECURITY_DESCRIPTOR};
+        unsafe {
+            let mut descriptor = PSECURITY_DESCRIPTOR::default();
+            ConvertStringSecurityDescriptorToSecurityDescriptorW(&HSTRING::from(sddl), SDDL_REVISION_1, &mut descriptor, None)
+                .unwrap();
+            let mut text = PWSTR::null();
+            ConvertSecurityDescriptorToStringSecurityDescriptorW(
+                descriptor, SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &mut text, None,
+            )
+            .unwrap();
+            let spelled = text.to_string().unwrap();
+            let _ = LocalFree(Some(HLOCAL(text.0.cast())));
+            let _ = LocalFree(Some(HLOCAL(descriptor.0)));
+            spelled
+        }
+    }
+
     #[cfg(windows)]
     #[test]
     fn the_pipe_is_this_accounts_alone_and_recognises_its_own_relay() {
@@ -771,15 +799,18 @@ mod tests {
         use std::os::windows::io::AsRawHandle;
         let name = format!(r"\\.\pipe\liv-test-{}-{}", std::process::id(), COUNTER.fetch_add(1, Ordering::Relaxed));
         let sid = crate::platform::current_user_sid().expect("our SID");
+        // One entry, this account's, with full access and nothing inherited.
+        let ours_alone = as_windows_spells(&format!("D:P(A;;FA;;;{sid})"));
+        assert!(ours_alone.starts_with("D:P(A;;FA;;;") && ours_alone.matches("(A;").count() == 1, "{ours_alone}");
         block_on(async {
             let mut server = listen(&name, true).expect("the pipe opens");
             // One entry, ours, with nothing inherited: not Everyone's read access
             // that Windows gives a pipe by default.
-            assert_eq!(access_list(server.as_raw_handle()), format!("D:P(A;;FA;;;{sid})"));
+            assert_eq!(access_list(server.as_raw_handle()), ours_alone);
             // Nobody starts another pipe on the name, and our next instance joins it.
             assert!(listen(&name, true).is_err());
             let next = listen(&name, false).expect("a second instance");
-            assert_eq!(access_list(next.as_raw_handle()), format!("D:P(A;;FA;;;{sid})"));
+            assert_eq!(access_list(next.as_raw_handle()), ours_alone);
 
             // A relay of this account connects the way liv-hook does (hook/src/win.rs),
             // sends its line and is gone before we look.
