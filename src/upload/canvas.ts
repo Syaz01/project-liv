@@ -5,6 +5,7 @@
 // the file going into its visor. The island's own figure is hidden for the
 // duration, because this canvas draws its own (liv.ts says what it does).
 
+import { paintParticles, particleCount, seedParticles, type Particle } from "../core/particles";
 import { canvasRatio } from "../core/scale";
 import { State } from "../core/state";
 import { SCRIPT_FONTS } from "../core/fonts";
@@ -118,6 +119,9 @@ export class UploadCanvas {
   readonly defaultTextRight: number = TEXT_RIGHT;
   /** What the sequence's Liv wears: what the island's own has on, which it stands in for. */
   outfit: Outfit = "none";
+  /** The specks over the drop card, and when they were last moved on (seconds). */
+  private specks: Particle[] = [];
+  private specksAt = 0;
 
   constructor(actions: UploadCanvasActions) {
     this.canvas = document.createElement("canvas");
@@ -188,6 +192,31 @@ export class UploadCanvas {
 
   // ── Scene ─────────────────────────────────────────────────────────────────
 
+  /**
+   * The specks of the Liv window (core/particles.ts) over the card while it
+   * waits for a file: white, and green once a file is over it. Drawn inside
+   * the card's clip, in the card's own corner.
+   */
+  private drawSpecks(ctx: CanvasRenderingContext2D, f: UploadFrame, wallTime: number) {
+    if (f.zoneAlpha <= 0) {
+      this.specksAt = 0;
+      return;
+    }
+    if (this.specks.length === 0) {
+      this.specks = seedParticles(USC.CARD_W, USC.CARD_H, particleCount(USC.CARD_W, USC.CARD_H));
+    }
+    const dt = this.specksAt ? Math.min(0.05, Math.max(0, wallTime - this.specksAt)) : 0;
+    this.specksAt = wallTime;
+    const tint = f.zoneOver ? "52,212,153" : "170,176,188";
+    ctx.save();
+    ctx.globalAlpha = f.zoneAlpha;
+    ctx.translate(USC.CARD_X, USC.CARD_Y);
+    paintParticles(ctx, this.specks, dt, wallTime, USC.CARD_W, USC.CARD_H, null, 0, (white, alpha) =>
+      `rgba(${white ? "255,255,255" : tint},${alpha})`,
+    );
+    ctx.restore();
+  }
+
   private drawScene(ctx: CanvasRenderingContext2D, f: UploadFrame, wallTime: number) {
     // Island background.
     ctx.fillStyle = "#000000";
@@ -211,6 +240,7 @@ export class UploadCanvas {
       ctx.fillStyle = g;
       ctx.fillRect(USC.CARD_X, USC.CARD_Y, USC.CARD_W, USC.CARD_H);
     }
+    this.drawSpecks(ctx, f, wallTime);
     ctx.restore();
 
     // Dashed border, marching left to right at ~20 pt/s.

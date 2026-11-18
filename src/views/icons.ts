@@ -82,6 +82,8 @@ export const ICONS = {
   // ── Tools (the header tab, and the kinds of what was copied) ──
   // clipboard (stroked): the header tab of the tools
   clipboard: "M9.5 3.5h5a1.5 1.5 0 0 1 1.5 1.5v.5A1.5 1.5 0 0 1 14.5 7h-5A1.5 1.5 0 0 1 8 5.5V5a1.5 1.5 0 0 1 1.5-1.5zM8 5H6.5a2 2 0 0 0-2 2v11.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H16M8.5 11.5h7M8.5 15.5h4.5",
+  // building.2 (stroked): the header tab of the virtual office
+  office: "M4.5 20V6a1.5 1.5 0 0 1 1.5-1.5h6.5A1.5 1.5 0 0 1 14 6v14M14 10.5h4a1.5 1.5 0 0 1 1.5 1.5v8M3 20h18M7.75 8.5h3M7.75 12h3M7.75 15.5h3M16.75 14.5v2",
   // text.alignleft (stroked): a copied text
   textLines: "M5 7h14M5 12h14M5 17h9",
   // link (stroked): a copied address

@@ -125,6 +125,10 @@ test("the specks behind Liv ask for frames only on the open island, in sight and
   State.parked = true;
   assert.equal(view.tick(1048), false);
   State.parked = false;
+  // With Liv out on the desktop nothing moves in the open island.
+  State.petAway = true;
+  assert.equal(view.tick(1064), false);
+  State.petAway = false;
   State.mode = "hidden";
 });
 

@@ -9,7 +9,8 @@ código de Coucou para Windows (MIT). El dueño del proyecto escribe en español
 - `src/core/` — estado (`state.ts`), puente con Rust (`bridge.ts`), tamaños (`layout.ts`), resortes y curvas (`anim.ts`).
 - `src/views/` — las vistas de la isla; `src/settings/` y `src/hub/` — la ventana de ajustes.
 - `src/style.css` — todo el aspecto de la isla.
-- `src/core/office.ts`, `src/island/office.ts`, `src/views/office.ts` — la oficina virtual (`liv-hook office`); su contrato es `docs/OFICINA.md`.
+- `src/core/office.ts`, `src/island/office.ts`, `src/views/office.ts` — la oficina virtual (`liv-hook office`); su contrato es `docs/OFICINA.md`. La pestaña de la oficina está en la cabecera (`views/views.ts`); `docs/OFICINA-PROYECTO.md` es la guía para quien construya la oficina, que es un programa aparte.
+- `src/core/particles.ts` y `src/views/stars.ts` — las motas que derivan detrás de Liv en las tarjetas de la isla y en la ventana de Ajustes; `src/core/chat-look.ts` — el icono de rombos del chat y el color de Liv según quién responde.
 - `src/core/appearance.ts` y `src-tauri/src/appearance.rs` — la forma de la isla abierta que el usuario elige en Ajustes → Apariencia (ancho, alto adicional, redondeo de las esquinas, opacidad): rangos, valores por defecto y el panel de la ventana; la sección de Ajustes está en `src/settings/appearance.ts`.
 - `src/core/scale.ts` y `src-tauri/src/scale.rs` — el tamaño de la isla (zoom del webview); `src-tauri/src/fullscreen.rs` — apartarse cuando otra app está en pantalla completa.
 - `src/core/guards.ts` — lo que la página rechaza como navegador (recargar, zoom, menú; en Rust, `webview_guard.rs`); `alerts.ts` — cuándo una alerta puede tomar la pantalla; `frames.ts` — cuándo se detiene el bucle de animación.

@@ -7,6 +7,7 @@
 // is: 640 × 176, in the middle of an island made wider or taller (`staged` in
 // style.css; core/layout.ts: stageOffset puts Liv there too).
 
+import { addStars } from "./stars";
 import { h, clear } from "./dom";
 import { State } from "../core/state";
 import type { ViewActions, ViewHost } from "./views";
@@ -31,6 +32,9 @@ function dashedFrame(): SVGSVGElement {
   return el;
 }
 
+/** The card's green while a file is over it, for its specks. */
+const DROP_GREEN = "#34D499";
+
 export function buildUpload(): ViewHost {
   const frame = dashedFrame();
   const title = h("div", { class: "drop-title", text: tl("Drop your files here") });
@@ -46,9 +50,13 @@ export function buildUpload(): ViewHost {
     h("div", { class: "drop-body" }, title, tags),
   );
   const el = h("div", { class: "view staged" }, card);
+  // The specks of the Liv window all over the card (stars.ts): in the colour
+  // of the pill in front, and green once a file is over it.
+  const stars = addStars(card, "whole");
 
   return {
     el,
+    tick: (nowMs: number) => stars.tick(nowMs, State.fileDragOver ? DROP_GREEN : State.focusTask?.color ?? "#FFFFFF"),
     sync() {
       card.classList.toggle("over", State.fileDragOver);
     },

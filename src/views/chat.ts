@@ -14,7 +14,6 @@ import { ICONS } from "./icons";
 import { renderMarkdown } from "./markdown";
 import { Bridge, onEvent, type ChatContext, type ModelInfo } from "../core/bridge";
 import { markFor, type GemSlot } from "../core/chat-look";
-import { paintParticles, particleCount, seedParticles, type Particle, type Point } from "../core/particles";
 import {
   activeModel, pickModel, providerDef, toolModel, visibleProviders, withModel, withToolModel, type ProviderDef,
 } from "../core/providers";
@@ -22,7 +21,7 @@ import { chatSettingsTarget } from "../core/settings-target";
 import { Sound } from "../core/sound";
 import { chipLabel, loadSubscriptions, subscribedProviders, subscription } from "../core/subscriptions";
 import { State, type ChatMessage } from "../core/state";
-import { hexToRGB } from "../robot/look";
+import { addStars } from "./stars";
 import type { ViewHost } from "./views";
 import { N_, t, tl, type Msg } from "../i18n/i18n";
 
@@ -283,12 +282,10 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   body.append(chipRow, log, picker.el, modelRow, bar);
   void loadSubscriptions().then(() => drawModelButton());
 
-  // Behind Liv, in the room the card leaves it: the specks of the Liv window.
-  const stars = buildStars();
-  const card = h("div", { class: "card wash chat-card" }, stars.el, body);
+  // Behind Liv, in the room the card leaves it: the specks of the Liv window (stars.ts).
+  const card = h("div", { class: "card wash chat-card" }, body);
   card.style.setProperty("--wash", "rgba(99,102,241,0.5)");
-  card.addEventListener("pointermove", (e) => stars.pointer(e as PointerEvent));
-  card.addEventListener("pointerleave", () => stars.pointer(null));
+  const stars = addStars(card, "side");
   const el = h("div", { class: "view" }, card);
 
   let sending = false;
@@ -439,12 +436,7 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
      * they stand still and ask for nothing.
      */
     tick(nowMs) {
-      if (State.mode !== "expanded" || State.parked || State.paused) {
-        stars.rest();
-        return false;
-      }
-      stars.draw(nowMs, providerDef(State.settings.chatProvider).accent);
-      return true;
+      return stars.tick(nowMs, providerDef(State.settings.chatProvider).accent);
     },
   };
 }
@@ -486,72 +478,6 @@ function buildMark(): { el: SVGSVGElement; draw(provider: string): void } {
         gem.setAttribute("stroke", color);
         gem.setAttribute("class", on ? "gem on" : "gem");
       }
-    },
-  };
-}
-
-// ── The specks behind Liv ─────────────────────────────────────────────────────
-
-/** One speck for every this many px² of the room, within these counts: fewer than in the Liv window's wide bands. */
-const STARS = { per: 1100, min: 10, max: 40 } as const;
-/** How tall the room is counted as when they are first spread: the chat's card at its usual height. */
-const ROOM_H = 230;
-
-function buildStars() {
-  const el = h("canvas", { class: "chat-stars" }) as HTMLCanvasElement;
-  let field: Particle[] = [];
-  let pointer: Point | null = null;
-  let strength = 0;
-  let last = 0;
-  /** The room they were last drawn in, px. */
-  let room = { w: 0, h: 0 };
-  /** "r,g,b" of the colour the specks were last drawn in. */
-  let tinted = { hex: "", rgb: "" };
-  return {
-    el,
-    /** Where the pointer is over the card, to push them away; null once it leaves. */
-    pointer(e: PointerEvent | null) {
-      if (!e) {
-        pointer = null;
-        return;
-      }
-      const box = el.getBoundingClientRect();
-      pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
-    },
-    /** The next frame comes after a pause: no jump when they move again. */
-    rest() {
-      last = 0;
-    },
-    draw(nowMs: number, color: string) {
-      const w = el.clientWidth;
-      const height = el.clientHeight;
-      const ctx = w && height ? el.getContext?.("2d") : null;
-      if (!ctx) return;
-      const dt = last ? Math.min(0.05, (nowMs - last) / 1000) : 0;
-      last = nowMs;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      if (el.width !== Math.round(w * dpr) || el.height !== Math.round(height * dpr)) {
-        el.width = Math.round(w * dpr);
-        el.height = Math.round(height * dpr);
-      }
-      if (field.length === 0) field = seedParticles(w, height, particleCount(w, ROOM_H, STARS.per, STARS.min, STARS.max));
-      // The card grows with the conversation, and from nothing as the island
-      // opens: they keep their places in it, spread over the whole room.
-      if (room.w !== w || room.h !== height) {
-        if (room.w && room.h) for (const p of field) (p.x *= w / room.w), (p.y *= height / room.h);
-        room = { w, h: height };
-      }
-      if (tinted.hex !== color) {
-        const [r, g, b] = hexToRGB(color);
-        tinted = { hex: color, rgb: `${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)}` };
-      }
-      strength += ((pointer ? 1 : 0) - strength) * Math.min(1, dt * 4);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, el.width, el.height);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintParticles(ctx, field, dt, nowMs / 1000, w, height, pointer, strength, (white, alpha) =>
-        `rgba(${white ? "255,255,255" : tinted.rgb},${alpha})`,
-      );
     },
   };
 }

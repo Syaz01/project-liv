@@ -27,6 +27,7 @@ import { chatReady, providerDef } from "../core/providers";
 import { autoCloseChoices } from "../core/autoclose";
 import { pillSettingsTarget, type SettingsTarget } from "../core/settings-target";
 import { loadSubscriptions, subscription } from "../core/subscriptions";
+import { addStars } from "./stars";
 import { buildRecap } from "./recap";
 import { buildUpdate } from "./update";
 import { buildWhatsNew } from "./whatsnew";
@@ -49,6 +50,8 @@ export interface ViewActions {
   /** Folds a waiting card to the compact island without answering it. */
   foldApproval(): void;
   setFocus(id: string): void;
+  /** The header's office tab: the office's card, or where the office is set up while there is none. */
+  openOffice(): void;
   openTerminal(): void;
   /** The ↗ button: opens whatever the focused pill points at. */
   openTarget(): void;
@@ -94,6 +97,11 @@ export interface ViewHost {
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────
 
+/** The colour of a card's specks: the pill in front, as Liv's shell and its dot. */
+function starColor(): string {
+  return State.focusTask?.color ?? "#FFFFFF";
+}
+
 function card(wash: Wash, ...children: (Node | string)[]): HTMLElement {
   const el = h("div", { class: wash ? "card wash" : "card" }, ...children);
   if (wash) el.style.setProperty("--wash", washRGBA(wash));
@@ -133,7 +141,7 @@ function stack(padLeft: number, padRight: number, ...children: Node[]): HTMLElem
 // ── Header ────────────────────────────────────────────────────────────────────
 
 export function buildHeader(actions: ViewActions): ViewHost {
-  const tabHome = h("button", { class: "tab", title: tl("Overview"), onclick: () => go("overview") }, svg(ICONS.house, 17));
+  const tabHome = h("button", { class: "tab", title: tl("Overview"), onclick: () => goHome() }, svg(ICONS.house, 17));
   const tabChat = h("button", { class: "tab", title: tl("Ask"), onclick: () => go("prompt") }, svg(ICONS.bubbleRound, 19));
   const tabDrop = h("button", { class: "tab", title: tl("Drop"), onclick: () => go("upload") }, svg(ICONS.plus, 16));
   // A new Claude Code session, in a project, from here (Mac: the terminal tab).
@@ -147,6 +155,14 @@ export function buildHeader(actions: ViewActions): ViewHost {
     "button",
     { class: "tab", title: tl("Tools"), onclick: () => go("tools") },
     svg(ICONS.clipboard, 17, { stroke: 1.7 }),
+  );
+
+  // The virtual office (docs/OFICINA.md): its card once there is one, else
+  // where it is set up.
+  const tabOffice = h(
+    "button",
+    { class: "tab", title: tl("Office"), onclick: () => { actions.blip(); actions.openOffice(); } },
+    svg(ICONS.office, 17, { stroke: 1.7 }),
   );
 
   const gearBtn = h("button", { title: tl("Settings"), onclick: () => go("settings") }, svg(ICONS.gearLine, 18, { stroke: 1.6 }));
@@ -165,10 +181,17 @@ export function buildHeader(actions: ViewActions): ViewHost {
     actions.setView(v);
   }
 
+  /** Home from the office's tab is the main pill again: the office has its own tab. */
+  function goHome() {
+    if (State.focusId === OFFICE_PILL_ID && State.mainPillId !== OFFICE_PILL_ID) actions.setFocus(State.mainPillId);
+    else actions.blip();
+    actions.setView("overview");
+  }
+
   const el = h(
     "div",
     { id: "header" },
-    h("div", { class: "tabs" }, tabHome, tabChat, tabDrop, tabLaunch, tabTools),
+    h("div", { class: "tabs" }, tabHome, tabChat, tabDrop, tabLaunch, tabTools, tabOffice),
     h("div", { class: "header-actions" }, planPills, gearBtn, soundBtn, closeBtn),
   );
   const headerActions = el.lastElementChild as HTMLElement;
@@ -177,7 +200,10 @@ export function buildHeader(actions: ViewActions): ViewHost {
     el,
     sync() {
       const v = State.view;
-      tabHome.classList.toggle("on", v === "overview" || v === "empty");
+      // The overview with the office's pill in front is the office's tab.
+      const office = v === "overview" && State.focusId === OFFICE_PILL_ID;
+      tabHome.classList.toggle("on", (v === "overview" || v === "empty") && !office);
+      tabOffice.classList.toggle("on", office);
       tabChat.classList.toggle("on", v === "prompt");
       tabDrop.classList.toggle("on", v === "upload");
       tabLaunch.classList.toggle("on", v === "launch");
@@ -235,6 +261,10 @@ function buildOverview(actions: ViewActions): ViewHost {
   const left = card(null, leftBody, jump);
   const pills = h("div", { class: "pills" });
   const right = card(null, pills);
+  // The specks of the Liv window (stars.ts), in the colour of the pill in
+  // front: behind Liv on the left, and all over the pills' card.
+  const leftStars = addStars(left, "side");
+  const rightStars = addStars(right, "whole");
   // Opened from a plan pill in the header: stands in for the left card.
   const plan = new PlanCard();
   let planTimer: number | null = null;
@@ -312,9 +342,11 @@ function buildOverview(actions: ViewActions): ViewHost {
   return {
     el,
     tick(nowMs: number) {
-      if (mode !== "ticker") return false;
+      const color = starColor();
+      const drifting = [leftStars.tick(nowMs, color), rightStars.tick(nowMs, color)].includes(true);
+      if (mode !== "ticker") return drifting;
       ticker.tick(nowMs);
-      return ticker.animating;
+      return ticker.animating || drifting;
     },
     command(command) {
       if (command === "openSelection") {
@@ -937,8 +969,11 @@ function buildSettings(actions: ViewActions): ViewHost {
   const el = h("div", { class: "view" },
     card(null, h("div", { class: "stack", style: "padding:14px 16px 14px 84px" }, rows)));
 
+  const stars = addStars(el.querySelector(".card") as HTMLElement, "side");
+
   return {
     el,
+    tick: (nowMs: number) => stars.tick(nowMs, starColor()),
     sync() {
       const s = State.settings;
       soundSwitch.classList.toggle("on", s.soundEnabled);

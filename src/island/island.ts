@@ -26,6 +26,7 @@ import { State } from "../core/state";
 import { SPOTIFY_ID, Spotify } from "../core/spotify";
 import { Tools, shelfTakesDrop } from "../core/tools";
 import { OFFICE_PILL_ID } from "../core/office";
+import { pillSettingsTarget } from "../core/settings-target";
 import { shownOutfit } from "../core/wardrobe";
 import { shouldDance } from "../robot/dance";
 import { nextLife } from "../robot/life";
@@ -301,6 +302,16 @@ export class Island {
         // after looking at another pill brings the card up again.
         const req = State.pendingApproval;
         if (req?.pillId === id) this.setView(req.questions ? "question" : "approval");
+      },
+      openOffice: () => {
+        // No office yet (none declared, none heard from): its box in
+        // Settings, where it is switched on and given its address.
+        if (!State.tasks.some((task) => task.id === OFFICE_PILL_ID)) {
+          void Bridge.openSettingsWindow(pillSettingsTarget(OFFICE_PILL_ID));
+          return;
+        }
+        State.setFocus(OFFICE_PILL_ID);
+        this.setView("overview");
       },
       openTerminal: () => {
         const task = State.focusTask;

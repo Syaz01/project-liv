@@ -940,6 +940,40 @@ test("only the n8n pill's error card opens n8n; the Claude app's opens the Claud
   hook({ hook_event_name: "SessionEnd", session_id: "d1", liv_agent: "claude-desktop" });
 });
 
+// ── The header's office tab ──────────────────────────────────────────────────
+
+test("the office tab: where it is set up while there is no office, its card once there is one", () => {
+  const tabs = () => root.find(".tab");
+  const office = () => tabs().at(-1);
+  island.alert("overview");
+  pass(0.1);
+  assert.equal(tabs().length, 6, "home, chat, drop, launch, tools and the office");
+  assert.ok(tabs()[0].classList.contains("on") && !office().classList.contains("on"));
+
+  // No office declared or heard from: its box in Settings, and the island stays as it is.
+  calls.length = 0;
+  office().fire("click");
+  assert.deepEqual(sent("open_settings_window"), [{ page: "integrations#integrations.office" }]);
+  assert.deepEqual([State.view, State.focusId], ["overview", "integration_claude"]);
+
+  // With an office: its pill comes to the front on the overview, and the tab is the lit one.
+  State.upsertWorkspacePill("integration_office", "Office", "");
+  island.setView("prompt");
+  calls.length = 0;
+  office().fire("click");
+  pass(0.1);
+  assert.deepEqual([State.view, State.focusId], ["overview", "integration_office"]);
+  assert.deepEqual(sent("open_settings_window"), []);
+  assert.ok(office().classList.contains("on") && !tabs()[0].classList.contains("on"));
+
+  // Home is the main pill again.
+  tabs()[0].fire("click");
+  pass(0.1);
+  assert.deepEqual([State.view, State.focusId], ["overview", "integration_claude"]);
+  assert.ok(tabs()[0].classList.contains("on") && !office().classList.contains("on"));
+  State.removeTask("integration_office");
+});
+
 // ── A fresh install: the main pill alone ──────────────────────────────────────
 
 test("with no other pill the overview's right card offers the way to add some", () => {

@@ -1337,17 +1337,30 @@ input[type="range"]::-webkit-slider-thumb {
   white-space: nowrap;
 }
 
-/* The specks behind Liv, in the room the card leaves on its left; they thin
-   out towards the conversation. */
-.chat-stars {
+/* The specks behind Liv (views/stars.ts): a canvas under a card's content.
+   `side` is the room the card leaves Liv on its left, where they thin out
+   towards the content; `whole` is all of the card. */
+.card.starry {
+  isolation: isolate;
+}
+
+.stars {
   position: absolute;
   left: 0;
   top: 0;
-  width: 92px;
   height: 100%;
+  z-index: -1;
   pointer-events: none;
+}
+
+.stars.side {
+  width: 92px;
   -webkit-mask-image: linear-gradient(to right, #000 62%, transparent);
   mask-image: linear-gradient(to right, #000 62%, transparent);
+}
+
+.stars.whole {
+  width: 100%;
 }
 
 /* Chips, rows and rule shared by the wardrobe, the launch menu and the chat's picker. */
