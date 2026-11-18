@@ -588,13 +588,14 @@ test("the pointer coming back takes the bar away and lets the loop stop", () => 
   pass(3);
   assert.equal(barWidth(), 0);
   assert.ok(asleep());
-  // Leaving again starts the whole countdown over: nothing shows for six seconds.
+  // The pointer has been on it: leaving folds it at once, no countdown to wait for.
   pointer(FAR);
-  pass(5.9);
-  assert.equal(barWidth(), 0);
-  assert.ok(asleep());
-  pass(0.3);
-  assert.ok(barWidth() > 150);
+  pass(0.5);
+  assert.equal(State.mode, "expanded", "the short grace, for a pointer that slips past the edge");
+  pass(0.2);
+  assert.equal(State.mode, "compact");
+  pass(3);
+  assert.ok(asleep(), "folded, the loop stops again");
 });
 
 test("a pinned island shows no countdown and asks for no frame", () => {

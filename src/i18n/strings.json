@@ -202,8 +202,8 @@
     "Hooks not installed": {
       "es": "Hooks no instalados"
     },
-    "Hovering the island opens it; it folds again shortly after the pointer leaves. Click inside to keep it open.": {
-      "es": "Pasar el puntero por la isla la abre; se pliega poco después de que el puntero salga. Haz clic dentro para dejarla abierta."
+    "Hovering the island opens it; it folds again shortly after the pointer leaves.": {
+      "es": "Pasar el puntero por la isla la abre; se pliega poco después de que el puntero salga."
     },
     "Install it": {
       "es": "Instalarlo"
@@ -1312,8 +1312,8 @@
     "running": {
       "es": "en curso"
     },
-    "seconds after you leave the island": {
-      "es": "segundos después de salir de la isla"
+    "seconds, when it opens on its own and the pointer stays away": {
+      "es": "segundos, cuando se abre sola y no pasas el puntero por ella"
     },
     "settings.json: {what} has an unexpected type — Liv has not touched it.": {
       "es": "settings.json: {what} tiene un tipo inesperado — Liv no lo ha tocado."

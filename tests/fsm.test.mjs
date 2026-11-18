@@ -139,11 +139,13 @@ test("a transition to the current state is not reported", () => {
 
 // ── Auto-close delay from Settings (IslandAutoCloseTests.swift) ──────────────
 
-/** Opened by a click, the way the Mac tests open theirs. */
+/**
+ * Opened on its own (an alert, a shortcut), the pointer elsewhere: the one
+ * case the auto-close delay counts for.
+ */
 function opened(delay) {
   fsm.homeToPetitDelay = delay;
-  fsm.mouseEntered();
-  fsm.click();
+  fsm.forceHome();
   assert.equal(fsm.state, "home");
 }
 
@@ -174,25 +176,113 @@ test("a longer delay also cancels the shorter timer that was running", () => {
   assert.equal(fsm.state, "petit");
 });
 
-test("coming back cancels the countdown, and leaving again starts it with the delay", () => {
-  opened(0.05);
+test("the pointer coming cancels the countdown; once it has been on the island, leaving folds it", () => {
+  opened(30);
   fsm.mouseLeft();
   fsm.mouseEntered();
-  seconds(0.1);
+  seconds(600);
   assert.equal(fsm.state, "home");
+  // No 30 seconds now: the short grace, and it folds.
   fsm.mouseLeft();
-  seconds(0.05);
+  seconds(0.5);
+  assert.equal(fsm.state, "home");
+  seconds(0.1);
   assert.equal(fsm.state, "petit");
 });
 
 test("a delay edit while the island is hovered starts no countdown", () => {
   opened(15);
+  fsm.mouseEntered();
   fsm.homeToPetitDelay = 0.05;
   seconds(600);
   assert.equal(fsm.state, "home");
   fsm.mouseLeft();
-  seconds(0.05);
+  seconds(0.6);
   assert.equal(fsm.state, "petit");
+});
+
+// ── Leaving folds the island, clicked or not ─────────────────────────────────
+
+test("opened by a click, the island folds as soon as the pointer leaves", () => {
+  fsm.homeToPetitDelay = 15;
+  fsm.mouseEntered();
+  fsm.click();
+  assert.equal(fsm.state, "home");
+  fsm.mouseLeft();
+  seconds(0.5);
+  assert.equal(fsm.state, "home");
+  seconds(0.1);
+  assert.equal(fsm.state, "petit");
+});
+
+test("a click inside keeps nothing open: it still folds as the pointer leaves", () => {
+  fsm.homeToPetitDelay = 15;
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.userInteracted(); // a tab, a button, a field
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+  // And the countdown bar reads that short deadline, not the 15 seconds.
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.mouseLeft();
+  assert.ok(fsm.homeCollapseDueAt - performance.now() <= 600);
+});
+
+test("the pointer slipping past the edge and back keeps the island open", () => {
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.mouseLeft();
+  seconds(0.3);
+  fsm.mouseEntered();
+  seconds(600);
+  assert.equal(fsm.state, "home");
+});
+
+test("an island that opened on its own and the pointer never touched waits the auto-close delay", () => {
+  fsm.homeToPetitDelay = 5;
+  fsm.forceHome();
+  fsm.mouseLeft(); // what the island says when it opens with the pointer elsewhere
+  seconds(4.9);
+  assert.equal(fsm.state, "home");
+  seconds(0.1);
+  assert.equal(fsm.state, "petit");
+  // Opened again by an alert after a visit: the visit does not carry over.
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+  fsm.forceHome();
+  fsm.mouseLeft();
+  seconds(4.9);
+  assert.equal(fsm.state, "home");
+});
+
+test("asked to open with the pointer already on it (a tab, a button), it folds as the pointer leaves", () => {
+  fsm.homeToPetitDelay = 15;
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.forceHome(); // the chat tab, the plan gauge: an explicit open from inside
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+  // The same from the compact island: the pointer is on it when it opens.
+  fsm.mouseEntered();
+  fsm.forceHome();
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+});
+
+test("a waiting card still holds the island open after a click, whatever the pointer does", () => {
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.pinned = true;
+  fsm.mouseLeft();
+  seconds(600);
+  assert.equal(fsm.state, "home");
 });
 
 test("an alert waiting for an answer stays open through a delay edit", () => {
@@ -324,16 +414,16 @@ test("open on hover: coming back before the grace period keeps it open", () => {
   assert.equal(fsm.state, "home");
 });
 
-test("open on hover: a click inside makes it an ordinary open island", () => {
+test("open on hover: a click inside changes nothing, it folds as the pointer leaves", () => {
   fsm.openOnHover = true;
   fsm.homeToPetitDelay = 3;
   fsm.mouseEntered();
   seconds(0.5);
+  fsm.userInteracted();
   fsm.mouseLeft();
-  fsm.userInteracted();          // the short countdown becomes the normal one
-  seconds(1);
+  seconds(0.5);
   assert.equal(fsm.state, "home");
-  seconds(2);
+  seconds(0.1);
   assert.equal(fsm.state, "petit");
 });
 
@@ -348,11 +438,10 @@ test("open on hover: a waiting card holds the island, hover neither opens nor fo
   assert.equal(fsm.state, "home");
 });
 
-test("open on hover: an island opened by an alert keeps the normal delay", () => {
+test("open on hover: an island opened by an alert keeps the normal delay until the pointer comes", () => {
   fsm.openOnHover = true;
   fsm.homeToPetitDelay = 3;
   fsm.forceHome();
-  fsm.mouseEntered();
   fsm.mouseLeft();
   seconds(1);
   assert.equal(fsm.state, "home");

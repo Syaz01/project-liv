@@ -63,6 +63,30 @@ pub(crate) fn is_near(x: f64, y: f64, size: (f64, f64)) -> bool {
 /// Wider than the macOS 6 pt because a click must never be swallowed.
 const HIT_MARGIN: f64 = 14.0;
 
+/// How near the island a file being dragged has to come for the window to
+/// take it, in page px: right in front of the island. Anywhere else under the
+/// panel the drag goes on to what is behind — a file being moved about the
+/// desktop is not a file for Liv.
+const DROP_MARGIN: f64 = 20.0;
+
+/// Whether (x, y) is on `rect` or within `margin` of it; never on an island with no shape yet.
+fn within(rect: &IslandRect, margin: f64, x: f64, y: f64) -> bool {
+    rect.w > 0.0
+        && x >= rect.x - margin
+        && x <= rect.x + rect.w + margin
+        && y >= rect.y - margin
+        && y <= rect.y + rect.h + margin
+}
+
+/// Whether the window takes the mouse for a button held down. A press that
+/// began on the island keeps the whole panel while it lasts (a slider dragged
+/// past the edge, text being selected, something on its way out of the
+/// shelf); one that began elsewhere is a file being brought, and counts only
+/// in the drop zone around the island.
+fn takes_drag(down: bool, pressed_on_island: bool, in_panel: bool, in_drop_zone: bool) -> bool {
+    down && if pressed_on_island { in_panel } else { in_drop_zone }
+}
+
 #[derive(Serialize, Clone)]
 pub struct CursorPayload {
     pub x: f64,
@@ -88,6 +112,9 @@ pub struct PollGate {
     /// The window's size while collapsed, in page px: the closed island the
     /// page draws, or the wake strip.
     pub collapsed_size: Mutex<(f64, f64)>,
+    /// Folded where the window keeps its size (platform::FOLDS_BY_REGION): the
+    /// part of it that is the closed island, in px of the window; None open.
+    pub folded_part: Mutex<Option<(i32, i32, i32, i32)>>,
     pub rect: Mutex<IslandRect>,
     /// Mirrors the window flag so we only call into the OS when it changes.
     ignoring: AtomicBool,
@@ -123,6 +150,7 @@ impl PollGate {
             cv: Condvar::new(),
             collapsed: AtomicBool::new(true),
             collapsed_size: Mutex::new((STRIP_W, STRIP_H)),
+            folded_part: Mutex::new(None),
             rect: Mutex::new(IslandRect::default()),
             ignoring: AtomicBool::new(false),
             scale: AtomicU64::new(1.0f64.to_bits()),
@@ -650,9 +678,16 @@ pub fn apply_geometry(app: &AppHandle) {
     let island = scale::fit(wanted, panel, scale, (work.width, work.height));
     gate.set_scale(&win, island);
 
-    let (lw, lh) = collapsed.map(|size| clamp_collapsed(size, panel)).unwrap_or(panel);
+    let closed = collapsed.map(|size| clamp_collapsed(size, panel));
+    // Folded, the window is the closed island — or, where the platform cuts the
+    // closed island out of it instead, still the whole panel.
+    let (lw, lh) = if platform::FOLDS_BY_REGION { panel } else { closed.unwrap_or(panel) };
     let pw = scale::physical(lw, island, scale);
     let ph = scale::physical(lh, island, scale);
+    let part = closed
+        .filter(|_| platform::FOLDS_BY_REGION)
+        .map(|(w, h)| folded_part(pw, scale::physical(w, island, scale), scale::physical(h, island, scale)));
+    *gate.folded_part.lock().unwrap() = part;
     let x = mp.x + (ms.width as i32 - pw as i32) / 2;
     let y = mp.y + top_inset(&m);
     *gate.anchor.lock().unwrap() = Some((mp.x + ms.width as i32 / 2, y));
@@ -672,6 +707,9 @@ pub fn apply_geometry(app: &AppHandle) {
     // it there.
     if gate.parked() {
         let _ = win.set_position(PhysicalPosition::new(PARKED_AT, PARKED_AT));
+        if platform::FOLDS_BY_REGION {
+            platform::show_only(&win, part);
+        }
         return;
     }
     let _ = win.set_position(PhysicalPosition::new(x, y));
@@ -693,6 +731,21 @@ pub fn apply_geometry(app: &AppHandle) {
             let _ = win.set_position(PhysicalPosition::new(x, y));
         }
     }
+    // Last, with the window where and as big as it should be: folded, only the
+    // closed island of it exists; open, all of it.
+    if platform::FOLDS_BY_REGION {
+        platform::show_only(&win, part);
+    }
+}
+
+/// The closed island's place in a window `window_w` px wide that keeps the
+/// panel's size: in the middle of its top edge, where the page draws it. One
+/// px more on each side and below, so a rounding of the page's layout never
+/// shaves the island's edge.
+pub fn folded_part(window_w: u32, closed_w: u32, closed_h: u32) -> (i32, i32, i32, i32) {
+    let w = closed_w.min(window_w) as i32;
+    let x = (window_w as i32 - w) / 2;
+    ((x - 1).max(0), 0, (w + 2).min(window_w as i32), closed_h as i32 + 1)
 }
 
 /// A closed island never grows past the panel in force, and never shrinks
@@ -797,6 +850,8 @@ pub fn screen_point(app: &AppHandle, gate: &PollGate, (x, y): (f64, f64)) -> Opt
 pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
     std::thread::spawn(move || {
         let mut was_down = false;
+        // The press now held began on the island (see `takes_drag`).
+        let mut pressed_on_island = false;
         // A full-screen app and a change of displays are looked for on the
         // poll's own wake-ups, awake, folded or parked: no thread or timer of
         // their own.
@@ -884,33 +939,28 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
                 // shape. A small entry margin means the flag is already off by the
                 // time a moving cursor reaches a button.
                 let r = *gate.rect.lock().unwrap();
-                let on_island = r.w > 0.0
-                    && x >= r.x - HIT_MARGIN
-                    && x <= r.x + r.w + HIT_MARGIN
-                    && y >= r.y - HIT_MARGIN
-                    && y <= r.y + r.h + HIT_MARGIN;
+                let on_island = within(&r, HIT_MARGIN, x, y);
 
                 // A file being dragged has to be able to find us. WS_EX_TRANSPARENT
                 // — what click-through is on Windows — hides the window from
                 // WindowFromPoint, so OLE finds no drop target and shows the "no
                 // drop" cursor. macOS has no such problem: AppKit delivers drags to
                 // registered destinations whatever ignoresMouseEvents says. So while
-                // a button is held anywhere over the panel, the whole panel takes
-                // the mouse, which also makes the drop zone as forgiving as the Mac's.
-                // A press may be the start of a drag: make sure the drop target is
-                // ours before the file arrives.
+                // a button is held with the cursor right in front of the island, the
+                // window takes the mouse (`takes_drag`) — not anywhere under the
+                // panel, where a file only being moved about the desktop would land
+                // on Liv. A press may be the start of a drag: make sure the drop
+                // target is ours before the file arrives.
                 let down = left_button_down();
                 if down && !was_down {
+                    pressed_on_island = on_island;
                     let handle = app.clone();
                     let _ = app.run_on_main_thread(move || platform::unblock_webview_drops(&handle));
                 }
                 was_down = down;
 
-                let dragging = down
-                    && x >= 0.0
-                    && x <= size.0
-                    && y >= 0.0
-                    && y <= size.1;
+                let in_panel = x >= 0.0 && x <= size.0 && y >= 0.0 && y <= size.1;
+                let dragging = takes_drag(down, pressed_on_island, in_panel, within(&r, DROP_MARGIN, x, y));
 
                 let accept = on_island || dragging;
                 if gate.ignoring.load(Ordering::Relaxed) == accept {
@@ -945,7 +995,12 @@ fn wake_if_hovered(app: &AppHandle, gate: &PollGate) {
     let (Ok(origin), Ok(size), Some((cx, cy))) = (win.outer_position(), win.inner_size(), cursor_physical()) else { return };
     let x = cx - origin.x as f64;
     let y = cy - origin.y as f64;
-    if x >= 0.0 && y >= 0.0 && x <= size.width as f64 && y <= size.height as f64 + 2.0 {
+    // The closed island: the whole window, or the part of it that is left (FOLDS_BY_REGION).
+    let (left, top, w, h) = match *gate.folded_part.lock().unwrap() {
+        Some((px, py, pw, ph)) => (px as f64, py as f64, pw as f64, ph as f64),
+        None => (0.0, 0.0, size.width as f64, size.height as f64),
+    };
+    if x >= left && y >= top && x <= left + w && y <= top + h + 2.0 {
         gate.ignoring.store(false, Ordering::Relaxed);
         platform::set_click_through(&win, false);
         let _ = win.emit("closed-hover", ());
@@ -995,5 +1050,56 @@ pub fn refresh_click_through(app: &AppHandle, gate: &PollGate) {
 pub fn set_ignore_cursor(app: &AppHandle, ignore: bool) {
     if let Some(win) = window(app) {
         platform::set_click_through(&win, ignore);
+    }
+}
+
+#[cfg(test)]
+mod drop_zone_tests {
+    use super::*;
+
+    /// The compact island in the middle of a 720 px panel.
+    const COMPACT: IslandRect = IslandRect { x: 216.0, y: 0.0, w: 288.0, h: 32.0 };
+
+    #[test]
+    fn a_file_counts_only_right_in_front_of_the_island() {
+        let zone = |x: f64, y: f64| within(&COMPACT, DROP_MARGIN, x, y);
+        // On it, and a little past each edge.
+        assert!(zone(360.0, 16.0));
+        assert!(zone(216.0 - 20.0, 16.0) && zone(504.0 + 20.0, 16.0) && zone(360.0, 32.0 + 20.0));
+        // A little further, and anywhere else under the panel: not for Liv.
+        assert!(!zone(216.0 - 21.0, 16.0) && !zone(504.0 + 21.0, 16.0) && !zone(360.0, 32.0 + 21.0));
+        assert!(!zone(360.0, 200.0) && !zone(40.0, 16.0) && !zone(700.0, 300.0));
+        // An island with no shape yet takes nothing.
+        assert!(!within(&IslandRect::default(), DROP_MARGIN, 0.0, 0.0));
+    }
+
+    #[test]
+    fn a_press_begun_on_the_island_keeps_the_panel_a_file_from_elsewhere_only_the_drop_zone() {
+        // A file brought from the desktop: under the panel but away from the island, it goes on.
+        assert!(!takes_drag(true, false, true, false));
+        assert!(takes_drag(true, false, true, true));
+        // A slider or a shelf item dragged past the island's edge: still ours while in the panel.
+        assert!(takes_drag(true, true, true, false));
+        assert!(!takes_drag(true, true, false, false));
+        // No button, no drag.
+        assert!(!takes_drag(false, true, true, true));
+        assert!(!takes_drag(false, false, true, true));
+    }
+}
+
+#[cfg(test)]
+mod folded_part_tests {
+    use super::*;
+
+    #[test]
+    fn the_closed_island_is_cut_out_of_the_middle_of_the_windows_top_edge() {
+        // A 1080 px window, a closed island of 120 × 48: centred, a px to spare around it.
+        assert_eq!(folded_part(1080, 120, 48), (479, 0, 122, 49));
+        // The wake strip: as thin as it is.
+        assert_eq!(folded_part(1080, 300, 9), (389, 0, 302, 10));
+        // Never wider than the window, never outside it.
+        assert_eq!(folded_part(100, 400, 30), (0, 0, 100, 31));
+        let (x, _, w, _) = folded_part(101, 100, 30);
+        assert!(x >= 0 && x + w <= 101);
     }
 }

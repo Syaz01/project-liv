@@ -267,9 +267,10 @@ fn language_changed(app: &AppHandle) {
     tray::retitle(app);
 }
 
-/// Hidden island → shrink the window to the closed island (the invisible wake
-/// strip when it shows nothing) and park the cursor poll; anything else → full
-/// panel and 60 Hz polling.
+/// Hidden island → the window is the closed island (the invisible wake strip
+/// when it shows nothing) — cut out of a window that keeps its size on Windows,
+/// shrunk to it elsewhere (island::apply_geometry) — and the cursor poll
+/// parks; anything else → full panel and 60 Hz polling.
 #[tauri::command]
 fn set_collapsed(app: AppHandle, shared: State<Shared>, collapsed: bool, width: Option<f64>, height: Option<f64>) {
     shared.gate.collapsed.store(collapsed, Ordering::Relaxed);
