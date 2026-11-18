@@ -12,6 +12,11 @@
 // dropped file is read with no web at all (a file written to steer the model
 // could otherwise send what it reads to a website). Claude Code reads the file
 // itself; the other tools get a text file's contents in the prompt.
+//
+// Antigravity CLI has no such mode that holds: its plan mode is an instruction
+// to the model, and in print mode it writes files anywhere without asking. A
+// run of it is held by its own deny rules instead, given for that run only
+// (`antigravity_rules`), and never starts without them.
 
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -35,6 +40,36 @@ const MODELS_TIMEOUT: Duration = Duration::from_secs(12);
 const MODELS_KEPT: Duration = Duration::from_secs(600);
 /// A dropped text file's contents go in the prompt up to this size.
 const MAX_INLINE_TEXT: u64 = 200_000;
+
+/// What Antigravity CLI may not do in a run for the chat, in its own rules
+/// (`action(target)`, a deny wins over everything): read or write any file
+/// (denying the read denies the write too), run a command, sandboxed or not,
+/// use an MCP server, or call a URL that does something. Reading a file for
+/// the chat, no URL is read either: nothing the file says can be sent to a
+/// website. Its web search has no rule and stays (tried, also in its strict
+/// mode): a search goes to Google, which the whole prompt goes to anyway.
+const ANTIGRAVITY_DENIED: [&str; 6] =
+    ["read_file(*)", "write_file(*)", "command(*)", "unsandboxed(*)", "mcp(*)", "execute_url(*)"];
+const ANTIGRAVITY_NO_WEB: &str = "read_url(*)";
+
+/// The settings of one Antigravity CLI run (`--settings`): never saved, they
+/// add to the user's own and their deny rules win over any allow rule there.
+fn antigravity_rules(web: bool) -> String {
+    let mut deny: Vec<&str> = ANTIGRAVITY_DENIED.to_vec();
+    if !web {
+        deny.push(ANTIGRAVITY_NO_WEB);
+    }
+    json!({ "permissions": { "deny": deny } }).to_string()
+}
+
+/// A rules file of a run, written in Liv's own folder: the tool reads it from there.
+fn rules_file(name: &str, contents: &str) -> Result<PathBuf, String> {
+    let dir = settings::local_dir().join("relay");
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let path = dir.join(name);
+    std::fs::write(&path, contents).map_err(|e| e.to_string())?;
+    Ok(path)
+}
 
 /// The Gemini CLI policy that keeps a run off the web while it reads a file.
 const NO_WEB_POLICY: &str = "[[rule]]\ntoolName = [\"google_web_search\", \"web_fetch\"]\ndecision = \"deny\"\npriority = 900\ndenyMessage = \"No web while Liv reads a file.\"\n";
@@ -301,7 +336,9 @@ pub struct Request<'a> {
     pub system: &'a str,
     pub prompt: &'a str,
     pub web: bool,
-    pub no_web_policy: Option<&'a Path>,
+    /// The file of rules that hold the run: Gemini CLI's policy while it reads
+    /// a file, Antigravity CLI's settings always.
+    pub rules: Option<&'a Path>,
 }
 
 /// The prompt as the tool receives it: the system prompt on top.
@@ -328,13 +365,18 @@ fn args(cli: Cli, r: &Request<'_>, prompt_arg: bool) -> Vec<OsString> {
                  "--allowed-mcp-server-names", "liv-none"]
                     .map(String::from),
             );
-            if let (false, Some(policy)) = (r.web, r.no_web_policy) {
+            if let (false, Some(policy)) = (r.web, r.rules) {
                 out.extend(["--policy".into(), policy.to_string_lossy().into_owned()]);
             }
         }
         Cli::Antigravity => {
+            // No "--mode plan": it is only an instruction to the model, and does
+            // nothing with slash commands off. Its deny rules are what holds it.
             out.extend(["-p".into(), prompt]);
-            out.extend(["--output-format", "json", "--mode", "plan", "--disable-slash-commands"].map(String::from));
+            out.extend(["--output-format", "json", "--disable-slash-commands"].map(String::from));
+            if let Some(rules) = r.rules {
+                out.extend(["--settings".into(), rules.to_string_lossy().into_owned()]);
+            }
         }
         Cli::Codex => {
             // Read-only sandbox and no shell at all; it searches only for the chat.
@@ -418,6 +460,10 @@ fn command(exe: &Path, workdir: &Path) -> tokio::process::Command {
 
 /// Runs the tool once and returns the text of its answer.
 async fn ask(cli: Cli, exe: &Path, r: &Request<'_>) -> Result<String, String> {
+    // Without its rules Antigravity CLI could write files: it does not run.
+    if cli == Cli::Antigravity && r.rules.is_none() {
+        return Err(tf("{tool} could not answer.", &[("tool", cli.name())]));
+    }
     let workdir = settings::local_dir().join("relay");
     std::fs::create_dir_all(&workdir).map_err(|e| e.to_string())?;
     let stdin_prompt = prompt_on_stdin(cli, exe);
@@ -615,15 +661,15 @@ pub async fn send(
         .await?
     } else {
         let prompt = chat_prompt(&turn.history, turn.first, context.as_ref(), &query);
-        let policy = (cli == Cli::Gemini && reads_file).then(|| {
-            let path = settings::local_dir().join("relay").join("gemini-no-web.toml");
-            let _ = std::fs::create_dir_all(settings::local_dir().join("relay"));
-            let _ = std::fs::write(&path, NO_WEB_POLICY);
-            path
-        });
+        let rules = match cli {
+            Cli::Gemini if reads_file => Some(rules_file("gemini-no-web.toml", NO_WEB_POLICY)?),
+            Cli::Antigravity if reads_file => Some(rules_file("antigravity-file.json", &antigravity_rules(false))?),
+            Cli::Antigravity => Some(rules_file("antigravity-chat.json", &antigravity_rules(true))?),
+            _ => None,
+        };
         // Its own choice of model, unless one of its own was picked.
         let picked = Some(model).filter(|m| !m.is_empty());
-        let request = Request { model: picked, system: &system, prompt: &prompt, web: !reads_file, no_web_policy: policy.as_deref() };
+        let request = Request { model: picked, system: &system, prompt: &prompt, web: !reads_file, rules: rules.as_deref() };
         ask(cli, &exe, &request).await?
     };
     // The record keeps the file's name, never its contents: later turns search the web.
@@ -683,6 +729,32 @@ mod tests {
 
     fn listed(models: &[ModelInfo]) -> Vec<(&str, &str)> {
         models.iter().map(|m| (m.id.as_str(), m.label.as_str())).collect()
+    }
+
+    #[test]
+    fn antigravity_may_only_answer() {
+        let denied = |web: bool| -> Vec<String> {
+            let rules: Value = serde_json::from_str(&antigravity_rules(web)).unwrap();
+            rules["permissions"]["deny"].as_array().unwrap().iter().map(|r| r.as_str().unwrap().to_string()).collect()
+        };
+        // No file read or written, no command, no MCP server: whatever is asked of it.
+        for rule in ["read_file(*)", "write_file(*)", "command(*)", "unsandboxed(*)", "mcp(*)", "execute_url(*)"] {
+            assert!(denied(true).contains(&rule.to_string()), "{rule}");
+            assert!(denied(false).contains(&rule.to_string()), "{rule}");
+        }
+        // The web for the chat only: never while it reads a dropped file.
+        assert!(!denied(true).contains(&"read_url(*)".to_string()));
+        assert!(denied(false).contains(&"read_url(*)".to_string()));
+        // Nothing is allowed here: the rules only take away.
+        let rules: Value = serde_json::from_str(&antigravity_rules(true)).unwrap();
+        assert!(rules["permissions"].get("allow").is_none());
+    }
+
+    #[tokio::test]
+    async fn antigravity_never_runs_without_its_rules() {
+        let nowhere = PathBuf::from("no-such-agy.exe");
+        let answer = ask(Cli::Antigravity, &nowhere, &request(true)).await;
+        assert!(answer.is_err());
     }
 
     #[test]
@@ -751,7 +823,7 @@ mod tests {
     }
 
     fn request(web: bool) -> Request<'static> {
-        Request { model: None, system: "SYS", prompt: "Hello?", web, no_web_policy: None }
+        Request { model: None, system: "SYS", prompt: "Hello?", web, rules: None }
     }
 
     #[test]
@@ -761,13 +833,17 @@ mod tests {
         assert_eq!(after(&gemini, "--approval-mode").as_deref(), Some("plan"));
         assert_eq!(after(&gemini, "--extensions").as_deref(), Some("none"));
         let policy = PathBuf::from("/tmp/no-web.toml");
-        let file = Request { no_web_policy: Some(&policy), ..request(false) };
+        let file = Request { rules: Some(&policy), ..request(false) };
         assert_eq!(after(&strings(&args(Cli::Gemini, &file, true)), "--policy").as_deref(), Some("/tmp/no-web.toml"));
         // Through npm's .cmd shim the prompt goes on stdin.
         assert!(!strings(&args(Cli::Gemini, &request(true), false)).contains(&"-p".to_string()));
 
-        let agy = strings(&args(Cli::Antigravity, &request(true), true));
-        assert_eq!(after(&agy, "--mode").as_deref(), Some("plan"));
+        // Antigravity CLI is held by its own deny rules, not by a mode it only tells the model about.
+        let rules = PathBuf::from("/tmp/antigravity-chat.json");
+        let agy = strings(&args(Cli::Antigravity, &Request { rules: Some(&rules), ..request(true) }, true));
+        assert_eq!(after(&agy, "--settings").as_deref(), Some("/tmp/antigravity-chat.json"));
+        assert!(agy.contains(&"--disable-slash-commands".to_string()));
+        assert!(!agy.contains(&"--mode".to_string()));
 
         let codex = strings(&args(Cli::Codex, &request(true), false));
         assert_eq!(&codex[..2], ["--search", "exec"]);

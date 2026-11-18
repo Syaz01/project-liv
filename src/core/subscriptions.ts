@@ -22,6 +22,16 @@ export function subscription(provider: string): SubscriptionStatus | undefined {
   return rows.find((r) => r.provider === provider);
 }
 
+/**
+ * The tool that answers for a chat provider's pill (`ai_google`…) on the
+ * user's subscription: its switch on and the tool installed. null: its key.
+ */
+export function pillTool(pillId: string): string | null {
+  if (!pillId.startsWith("ai_")) return null;
+  const sub = subscription(pillId.slice(3));
+  return sub?.on && sub.installed ? sub.tool : null;
+}
+
 /** The providers whose switch is on. */
 export function subscribedProviders(): Set<string> {
   return new Set(rows.filter((r) => r.on).map((r) => r.provider));

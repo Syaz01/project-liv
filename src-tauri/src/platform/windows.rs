@@ -32,6 +32,9 @@ use ::windows::Win32::System::Diagnostics::ToolHelp::{
 };
 use ::windows::Win32::System::Ole::RevokeDragDrop;
 use ::windows::Win32::System::Pipes::{GetNamedPipeClientProcessId, ImpersonateNamedPipeClient};
+use ::windows::Win32::System::Registry::{
+    RegGetValueW, HKEY, HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, RRF_NOEXPAND, RRF_RT_REG_EXPAND_SZ, RRF_RT_REG_SZ,
+};
 use ::windows::Win32::System::SystemInformation::GetLocalTime;
 use ::windows::Win32::System::Threading::{
     AttachThreadInput, GetCurrentProcess, GetCurrentProcessId, GetCurrentThread, GetCurrentThreadId,
@@ -142,10 +145,22 @@ pub fn reveal_folder(path: &str) {
 /// Our own `where`: walks %PATH% against %PATHEXT%, no shell involved.
 /// Rust quotes arguments correctly for `.cmd`/`.bat` targets since 1.77, so
 /// spawning `code.cmd` directly is safe.
+///
+/// The folders this process was started with come first, then the ones Windows
+/// has now: an installer adds its folder to the PATH in the registry, and a
+/// program already running never sees it. So a tool installed while Liv runs
+/// is found at once, without starting Liv again.
 pub fn find_on_path(stem: &str) -> Option<PathBuf> {
     let exts = std::env::var("PATHEXT").unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into());
-    let dirs = std::env::var_os("PATH")?;
-    for dir in std::env::split_paths(&dirs) {
+    let mut dirs: Vec<PathBuf> =
+        std::env::var_os("PATH").map(|path| std::env::split_paths(&path).collect()).unwrap_or_default();
+    dirs.extend(path_dirs_now());
+    search_dirs(&dirs, &exts, stem)
+}
+
+/// The first `stem` with one of `exts` (`.COM;.EXE;…`) in `dirs`, in their order.
+fn search_dirs(dirs: &[PathBuf], exts: &str, stem: &str) -> Option<PathBuf> {
+    for dir in dirs {
         for ext in exts.split(';').filter(|e| !e.is_empty()) {
             let candidate = dir.join(format!("{stem}{}", ext.to_lowercase()));
             if candidate.is_file() {
@@ -154,6 +169,75 @@ pub fn find_on_path(stem: &str) -> Option<PathBuf> {
         }
     }
     None
+}
+
+/// The folders of the machine's `Path` and the user's, as the registry holds them now.
+fn path_dirs_now() -> Vec<PathBuf> {
+    let env = |name: &str| std::env::var(name).ok();
+    [
+        (HKEY_LOCAL_MACHINE, w!("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment")),
+        (HKEY_CURRENT_USER, w!("Environment")),
+    ]
+    .into_iter()
+    .filter_map(|(root, key)| registry_string(root, key, w!("Path")))
+    .flat_map(|value| path_value_dirs(&value, env))
+    .collect()
+}
+
+/// A string of the registry as it is written there; None when there is none.
+fn registry_string(root: HKEY, key: ::windows::core::PCWSTR, name: ::windows::core::PCWSTR) -> Option<String> {
+    let kinds = RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ | RRF_NOEXPAND;
+    unsafe {
+        let mut bytes = 0u32;
+        RegGetValueW(root, key, name, kinds, None, None, Some(&mut bytes)).ok().ok()?;
+        let mut text = vec![0u16; (bytes as usize).div_ceil(2) + 1];
+        let mut bytes = (text.len() * 2) as u32;
+        RegGetValueW(root, key, name, kinds, None, Some(text.as_mut_ptr().cast()), Some(&mut bytes)).ok().ok()?;
+        let end = text.iter().position(|c| *c == 0).unwrap_or(text.len());
+        Some(String::from_utf16_lossy(&text[..end]))
+    }
+}
+
+/// The folders of a `Path` value: split on `;`, its `%VARIABLES%` filled in
+/// from `env`, quotes dropped. Only whole paths count: a relative one would
+/// mean a different folder for every program.
+fn path_value_dirs(value: &str, env: impl Fn(&str) -> Option<String>) -> Vec<PathBuf> {
+    value
+        .split(';')
+        .map(|dir| expand_variables(dir.trim().trim_matches('"'), &env))
+        .filter(|dir| !dir.is_empty())
+        .map(PathBuf::from)
+        .filter(|dir| dir.is_absolute())
+        .collect()
+}
+
+/// `text` with each `%NAME%` that `env` knows replaced by its value; one it
+/// does not know stays as written, as Windows leaves it.
+fn expand_variables(text: &str, env: &impl Fn(&str) -> Option<String>) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(start) = rest.find('%') {
+        out.push_str(&rest[..start]);
+        let after = &rest[start + 1..];
+        match after.find('%') {
+            Some(end) => match env(&after[..end]).filter(|_| end > 0) {
+                Some(value) => {
+                    out.push_str(&value);
+                    rest = &after[end + 1..];
+                }
+                None => {
+                    out.push('%');
+                    rest = after;
+                }
+            },
+            None => {
+                out.push('%');
+                rest = after;
+            }
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 /// Where a CLI such as `codex` or `claude` may be, best first: %PATH% (the
@@ -1018,4 +1102,70 @@ pub fn ctrl_alt_types(vk: u16, shift: bool) -> Option<String> {
         }
     }
     None
+}
+
+#[cfg(test)]
+mod path_tests {
+    use super::*;
+
+    fn env(name: &str) -> Option<String> {
+        match name.to_ascii_uppercase().as_str() {
+            "LOCALAPPDATA" => Some(r"C:\Users\ana\AppData\Local".into()),
+            "SYSTEMROOT" => Some(r"C:\Windows".into()),
+            _ => None,
+        }
+    }
+
+    #[test]
+    fn the_variables_of_a_path_are_filled_in() {
+        assert_eq!(expand_variables(r"%LOCALAPPDATA%\agy\bin", &env), r"C:\Users\ana\AppData\Local\agy\bin");
+        assert_eq!(expand_variables(r"%SystemRoot%\system32;%SystemRoot%", &env), r"C:\Windows\system32;C:\Windows");
+        // One Windows does not know stays as written; so does a lone percent sign.
+        assert_eq!(expand_variables(r"%NOPE%\bin", &env), r"%NOPE%\bin");
+        assert_eq!(expand_variables(r"C:\100%\bin", &env), r"C:\100%\bin");
+        assert_eq!(expand_variables("%%", &env), "%%");
+        assert_eq!(expand_variables("", &env), "");
+    }
+
+    #[test]
+    fn a_path_value_gives_its_whole_folders_in_order() {
+        let value = r#"%LOCALAPPDATA%\Programs\OpenAI\Codex\bin; "C:\Program Files\nodejs" ;;relative\bin;%NOPE%\x;C:\tools"#;
+        assert_eq!(
+            path_value_dirs(value, env),
+            [
+                PathBuf::from(r"C:\Users\ana\AppData\Local\Programs\OpenAI\Codex\bin"),
+                PathBuf::from(r"C:\Program Files\nodejs"),
+                PathBuf::from(r"C:\tools"),
+            ]
+        );
+        assert!(path_value_dirs("", env).is_empty());
+    }
+
+    #[test]
+    fn a_tool_is_found_in_the_first_folder_that_has_it() {
+        let root = std::env::temp_dir().join(format!("liv-path-{}", std::process::id()));
+        let (first, second) = (root.join("first"), root.join("second"));
+        std::fs::create_dir_all(&first).unwrap();
+        std::fs::create_dir_all(&second).unwrap();
+        std::fs::write(second.join("agy.exe"), b"").unwrap();
+        std::fs::write(second.join("codex.cmd"), b"").unwrap();
+        std::fs::write(first.join("codex.exe"), b"").unwrap();
+        let dirs = [root.join("missing"), first.clone(), second.clone()];
+        let exts = ".COM;.EXE;.BAT;.CMD";
+        // A folder added after the others still counts: that is the one the registry gives.
+        assert_eq!(search_dirs(&dirs, exts, "agy"), Some(second.join("agy.exe")));
+        assert_eq!(search_dirs(&dirs, exts, "codex"), Some(first.join("codex.exe")));
+        assert_eq!(search_dirs(&dirs[..2], exts, "agy"), None);
+        assert_eq!(search_dirs(&dirs, exts, "gemini"), None);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn the_registry_gives_the_path_windows_has_now() {
+        // This machine has a Path, with the system folder in it.
+        let dirs = path_dirs_now();
+        assert!(!dirs.is_empty());
+        assert!(dirs.iter().all(|dir| dir.is_absolute()));
+        assert!(dirs.iter().any(|dir| dir.join("cmd.exe").is_file()), "{dirs:?}");
+    }
 }

@@ -11,6 +11,7 @@ import {
   recordPress, type Binding,
 } from "../core/shortcuts";
 import { DEFAULT_SETTINGS, type Settings } from "../core/state";
+import { loadSubscriptions, pillTool, setSubscriptions } from "../core/subscriptions";
 import { closedIsland } from "../core/closed";
 import { safeUrl } from "../core/office";
 import { guardPage } from "../core/guards";
@@ -390,6 +391,7 @@ function subscriptionsSection(): HTMLElement {
       const p = providerDef(row.provider);
       const sw = toggle(row.on, (on) => {
         void Bridge.subscriptionSet(row.provider, on).then((next) => {
+          setSubscriptions(next);
           if (next) draw(next);
         });
       });
@@ -419,7 +421,7 @@ function subscriptionsSection(): HTMLElement {
       ));
     }
   };
-  void Bridge.subscriptionStatus().then((rows) => draw(rows ?? []));
+  void loadSubscriptions().then((rows) => draw(rows));
   return h(
     "section",
     { "data-anchor": "chat.subscriptions" },
@@ -535,7 +537,7 @@ function activePillsSection(connected: Record<string, boolean>): HTMLElement {
   /** Why a pill would show nothing yet, as on the Mac's row. */
   function hint(def: PillDefinition): string | null {
     if (def.connect.kind === "hooks" && !connected[def.id]) return t("Hooks not installed");
-    if (def.connect.kind === "key" && !connected[def.id]) return t("Key not configured");
+    if (def.connect.kind === "key" && !connected[def.id] && !pillTool(def.id)) return t("Key not configured");
     if (def.connect.kind === "server" && !settings[def.connect.field]) return t("Not connected");
     return null;
   }

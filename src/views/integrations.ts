@@ -7,6 +7,7 @@ import { ICONS } from "./icons";
 import { State, type AgentTask } from "../core/state";
 import { Bridge } from "../core/bridge";
 import { pillDefinition } from "../core/pills";
+import { pillTool } from "../core/subscriptions";
 import { refreshHookPills } from "../island/integrations";
 import { GH_STRINGS, readActivity, readPulse, readStats } from "../core/github";
 import { githubDetail, githubPulseCard, type ForgeCardOptions } from "./github";
@@ -61,6 +62,8 @@ export function idleStatus(
   id: string,
   info: { configured: boolean; error: string | null } | undefined,
   chatModel: string,
+  /** The tool that answers on the user's subscription, for a chat provider's pill (core/subscriptions.ts). */
+  viaTool: string | null = null,
 ): { label: string; color: string } {
   if (info?.error) return { label: info.error, color: "#F4505E" };
   const configured = info?.configured ?? false;
@@ -73,6 +76,8 @@ export function idleStatus(
   if (def?.connect.kind === "none") return ok(t("Ready · no setup needed"));
   if (def?.connect.kind === "server") return configured ? ok(t("Connected")) : missing(t("Not connected"));
   if (def?.category === "ai") {
+    // The chat goes through the plan the user pays for: no key is missing.
+    if (viaTool) return ok(t("On your subscription · {tool}", { tool: viaTool }));
     if (!configured) return missing(t("Key not configured"));
     return ok(id === "ai_anthropic" ? t("Key configured · {model}", { model: chatModel }) : t("Key configured"));
   }
@@ -83,7 +88,7 @@ function idleCard(task: AgentTask, openSettings: (pillId: string) => void): HTML
   const info = State.integrations[task.id];
   const configured = info?.configured ?? false;
   const def = pillDefinition(task.id);
-  const status = idleStatus(task.id, info, State.settings.model);
+  const status = idleStatus(task.id, info, State.settings.model, pillTool(task.id));
 
   const actions = h("div", { class: "int-actions" });
   if (task.id === "integration_claude") {

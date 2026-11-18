@@ -7,6 +7,7 @@ import { gitHubAlert, type GitHubEvent } from "../core/github";
 import { PILL_CATALOG } from "../core/pills";
 import { Sound } from "../core/sound";
 import { State } from "../core/state";
+import { loadSubscriptions } from "../core/subscriptions";
 import type { Island } from "./island";
 
 const GITHUB = "integration_github";
@@ -52,6 +53,8 @@ function refreshGitHubWhenShown() {
  * pill fed by hook events, nothing at all for Claude Desktop.
  */
 export async function refreshConfigured() {
+  // A chat provider answered on the user's subscription needs no key (core/subscriptions.ts).
+  await loadSubscriptions();
   const hooks = (await Bridge.agentHooksStatus()) ?? null;
   for (const def of PILL_CATALOG) {
     let configured: boolean;

@@ -892,6 +892,9 @@
     "Key configured": {
       "es": "Clave configurada"
     },
+    "On your subscription · {tool}": {
+      "es": "Con tu suscripción · {tool}"
+    },
     "Key from {site}": {
       "es": "Clave de {site}"
     },
