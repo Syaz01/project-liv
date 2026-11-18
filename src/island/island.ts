@@ -3,6 +3,7 @@
 
 import { Tracked, Spring } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop, type DragDropPayload } from "../core/bridge";
+import { chatShell, towards } from "../core/chat-look";
 import {
   DEFAULT_APPEARANCE, appearance, cornerRadius, islandShape, openHeight, panelSize, type Appearance,
 } from "../core/appearance";
@@ -28,7 +29,7 @@ import { OFFICE_PILL_ID } from "../core/office";
 import { shownOutfit } from "../core/wardrobe";
 import { shouldDance } from "../robot/dance";
 import { nextLife } from "../robot/life";
-import { CANVAS_PER_SLOT, hexToRGB, modelFor } from "../robot/look";
+import { CANVAS_PER_SLOT, hexToRGB, modelFor, type RGB } from "../robot/look";
 import { miniRobot } from "../robot/mini";
 import { outfitChoice, type Outfit } from "../robot/outfits";
 import { onHead } from "../robot/react";
@@ -190,6 +191,8 @@ export class Island {
   private cursor = { x: -10_000, y: -10_000 };
   /** Liv is out in its pocket, and what for; null the rest of the time. */
   private pocket: Pocket | null = null;
+  /** The colour Liv's shell wears in the chat: who answers; null out of it. */
+  private chatColor: RGB | null = null;
   /** Something is being typed in a card: the island stays open. */
   private holdingOpen = false;
   /** Last shape handed to Rust for the click-through test. */
@@ -1627,13 +1630,18 @@ export class Island {
     // At rest it wears its pill's colour; once something happens it goes back
     // to its own, and the state shows on the antenna and in the eyes.
     const resting = this.engine.state === "idle";
+    // In the chat it wears the colour of who answers, whatever its state, and
+    // goes from one provider's to the next's without a jump (core/chat-look.ts).
+    const answering = chatShell(State.mode, State.view, State.settings.chatProvider);
+    this.chatColor = answering ? (this.chatColor ? towards(this.chatColor, hexToRGB(answering), dt) : hexToRGB(answering)) : null;
     this.engine.bodyColor = planCardOpen()
       ? hexToRGB(openPlanColor())
-      : this.engine.showsUpdateHint
-        ? UPDATE_BLUE_RGB
-        : focus?.isIntegration && resting
-          ? hexToRGB(focus.color)
-          : null;
+      : (this.chatColor ??
+        (this.engine.showsUpdateHint
+          ? UPDATE_BLUE_RGB
+          : focus?.isIntegration && resting
+            ? hexToRGB(focus.color)
+            : null));
     // The whole body in the open island's cards and in its pocket, the head
     // alone anywhere else; and it breathes only on the open island.
     const roomy = State.mode === "expanded" || State.mode === "peek";

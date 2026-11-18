@@ -1272,50 +1272,82 @@ input[type="range"]::-webkit-slider-thumb {
   50% { transform: scale(1.2); }
 }
 
-/* ── Provider and model switcher (PromptView's model button) ─────────────── */
+/* ── Above the send button: who answers, and a new chat (views/chat.ts) ──── */
 
 .model-row {
   display: flex;
   justify-content: flex-end;
-  padding: 0 10px;
-}
-
-.model-btn {
-  display: inline-flex;
   align-items: center;
-  gap: 5px;
-  max-width: 100%;
-  padding: 4px 8px;
+  /* The mark stands right above the send button, 28px wide in the bar below. */
+  padding: 0 12px;
+}
+
+.chat-tool {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  padding: 0;
   border: 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #5c6370;
-  cursor: default;
-}
-
-.model-btn:hover:not(:disabled),
-.model-btn.open {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.model-btn:disabled {
-  opacity: 0.6;
-}
-
-.model-dot {
-  flex: 0 0 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.model-name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font: 500 10.5px var(--font);
+  border-radius: 8px;
+  background: transparent;
   color: #7b8089;
+  display: grid;
+  place-items: center;
+  cursor: default;
+  transition: background 0.12s ease-out, color 0.12s ease-out, transform 0.08s ease-out;
+}
+
+.chat-tool:hover:not(:disabled),
+.chat-tool.open {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink-2);
+}
+
+.chat-tool:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.chat-tool:disabled {
+  opacity: 0.5;
+}
+
+/* The mark: four gems, the one of who answers lit. */
+.model-mark .gem {
+  opacity: 0.4;
+  transition: opacity 0.25s ease-out, fill 0.25s ease-out, stroke 0.25s ease-out;
+}
+
+.model-mark .gem.on {
+  opacity: 1;
+}
+
+.model-btn:hover:not(:disabled) .gem:not(.on),
+.model-btn.open .gem:not(.on) {
+  opacity: 0.65;
+}
+
+/* The model's name is said, not shown: the mark stands for it, its tooltip spells it. */
+.model-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The specks behind Liv, in the room the card leaves on its left; they thin
+   out towards the conversation. */
+.chat-stars {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 92px;
+  height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, #000 62%, transparent);
+  mask-image: linear-gradient(to right, #000 62%, transparent);
 }
 
 /* Chips, rows and rule shared by the wardrobe, the launch menu and the chat's picker. */
@@ -3135,7 +3167,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .model-row {
-  gap: 6px;
+  gap: 4px;
 }
 
 /* ── Tools: the clipboard's history and the shelf ───────────────────────── */

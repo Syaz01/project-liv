@@ -3,7 +3,8 @@
 //
 // Answers are rendered as Markdown (markdown.ts). A local model streams its
 // answer: Rust sends `chat-delta` events with the text visible so far. The
-// model name above the text field opens the picker: the providers down the
+// mark above the send button — four gems, the one of who answers lit — opens
+// the picker: the providers down the
 // left, the chosen one's models beside them with the room they need — asked
 // for only once it is picked. While it is open the island is as tall as the
 // chat gets, so the list shows several models at once.
@@ -12,6 +13,8 @@ import { h, svg, clear } from "./dom";
 import { ICONS } from "./icons";
 import { renderMarkdown } from "./markdown";
 import { Bridge, onEvent, type ChatContext, type ModelInfo } from "../core/bridge";
+import { markFor, type GemSlot } from "../core/chat-look";
+import { paintParticles, particleCount, seedParticles, type Particle, type Point } from "../core/particles";
 import {
   activeModel, pickModel, providerDef, toolModel, visibleProviders, withModel, withToolModel, type ProviderDef,
 } from "../core/providers";
@@ -19,6 +22,7 @@ import { chatSettingsTarget } from "../core/settings-target";
 import { Sound } from "../core/sound";
 import { chipLabel, loadSubscriptions, subscribedProviders, subscription } from "../core/subscriptions";
 import { State, type ChatMessage } from "../core/state";
+import { hexToRGB } from "../robot/look";
 import type { ViewHost } from "./views";
 import { N_, t, tl, type Msg } from "../i18n/i18n";
 
@@ -27,6 +31,7 @@ const STRINGS = {
   placeholderNext: N_("Continue…"),
   send: N_("Send"),
   switchModel: N_("Switch provider or model"),
+  newChat: N_("Start a new chat"),
   noModel: N_("Choose a model"),
   loading: N_("Loading models…"),
   noKey: N_("No API key — add it in Settings."),
@@ -251,16 +256,18 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   const send = h("button", { class: "send-btn", title: tl(STRINGS.send) }, svg(ICONS.arrowUp, 11));
   const bar = h("div", { class: "chat-bar" }, input, send);
 
-  const modelDot = h("i", { class: "model-dot" });
+  // Above the send button: the mark of who answers, which opens the picker
+  // (the model's name is its tooltip, and what a screen reader says), and
+  // beside it, once there is a conversation, the button that starts a new one.
+  const mark = buildMark();
   const modelName = h("span", { class: "model-name" });
-  const modelBtn = h(
+  const modelBtn = h("button", { class: "chat-tool model-btn", title: tl(STRINGS.switchModel) }, mark.el, modelName);
+  const fresh = h(
     "button",
-    { class: "model-btn", title: tl(STRINGS.switchModel) },
-    modelDot,
-    modelName,
-    svg(ICONS.chevronUpDown, 9, { stroke: 2 }),
+    { class: "chat-tool new-chat", title: tl(STRINGS.newChat) },
+    svg(ICONS.arrowClockwise, 13, { stroke: 2.2 }),
   );
-  const modelRow = h("div", { class: "model-row" }, modelBtn);
+  const modelRow = h("div", { class: "model-row" }, fresh, modelBtn);
 
   const body = h("div", { class: "chat-body" });
   let pickerShown = false;
@@ -276,8 +283,13 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
   body.append(chipRow, log, picker.el, modelRow, bar);
   void loadSubscriptions().then(() => drawModelButton());
 
-  const el = h("div", { class: "view" }, h("div", { class: "card wash chat-card" }, body));
-  (el.querySelector(".card") as HTMLElement).style.setProperty("--wash", "rgba(99,102,241,0.5)");
+  // Behind Liv, in the room the card leaves it: the specks of the Liv window.
+  const stars = buildStars();
+  const card = h("div", { class: "card wash chat-card" }, stars.el, body);
+  card.style.setProperty("--wash", "rgba(99,102,241,0.5)");
+  card.addEventListener("pointermove", (e) => stars.pointer(e as PointerEvent));
+  card.addEventListener("pointerleave", () => stars.pointer(null));
+  const el = h("div", { class: "view" }, card);
 
   let sending = false;
   let renderedCount = -1;
@@ -286,11 +298,29 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
 
   function drawModelButton() {
     const p = providerDef(State.settings.chatProvider);
-    modelDot.style.background = p.accent;
-    modelName.textContent = chipLabel(State.settings, activeModel(State.settings)) || t(STRINGS.noModel);
+    const label = chipLabel(State.settings, activeModel(State.settings)) || t(STRINGS.noModel);
+    mark.draw(p.id);
+    modelName.textContent = label;
+    modelBtn.title = `${tl(p.name)} · ${label}`;
     modelBtn.classList.toggle("open", picker.isOpen);
     modelBtn.disabled = sending;
+    // Nothing to start over from an empty chat; and not while an answer is on its way.
+    fresh.style.display = State.chatHistory.length > 0 || State.droppedFile ? "" : "none";
+    fresh.disabled = sending;
   }
+
+  fresh.addEventListener("click", () => {
+    // An answer on its way would land in the new chat.
+    if (sending || State.stateOverride === "thinking") return;
+    if (picker.isOpen) picker.close();
+    State.chatHistory = [];
+    State.droppedFile = null;
+    void Bridge.chatReset();
+    Sound.play("blip");
+    State.notify();
+    onHeightChange();
+    input.focus();
+  });
 
   modelBtn.addEventListener("click", () => {
     if (sending) return;
@@ -402,6 +432,126 @@ export function buildPrompt(onHeightChange: () => void): ViewHost {
     /** Room for the picker's lists while it is open; the chat's own height otherwise. */
     height() {
       return picker.isOpen ? PICKER_HEIGHT : null;
+    },
+    /**
+     * The specks drift where somebody sees them: on the open island, which
+     * already draws every frame for Liv's breath. Folded, parked or paused
+     * they stand still and ask for nothing.
+     */
+    tick(nowMs) {
+      if (State.mode !== "expanded" || State.parked || State.paused) {
+        stars.rest();
+        return false;
+      }
+      stars.draw(nowMs, providerDef(State.settings.chatProvider).accent);
+      return true;
+    },
+  };
+}
+
+// ── Who answers, as a mark ────────────────────────────────────────────────────
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+/** The centre of each gem in the mark's 24 × 24 box, and how far its points reach. */
+const GEM_AT: Record<GemSlot, readonly [number, number]> = { top: [12, 6.4], left: [6.4, 12], right: [17.6, 12], bottom: [12, 17.6] };
+const GEM_REACH = 4;
+
+/** Four gems: the one of who answers lit, in its colour (core/chat-look.ts). */
+function buildMark(): { el: SVGSVGElement; draw(provider: string): void } {
+  const el = document.createElementNS(SVG_NS, "svg");
+  el.setAttribute("class", "model-mark");
+  el.setAttribute("viewBox", "0 0 24 24");
+  el.setAttribute("width", "20");
+  el.setAttribute("height", "20");
+  el.setAttribute("aria-hidden", "true");
+  const gems = new Map<GemSlot, SVGPathElement>();
+  for (const slot of Object.keys(GEM_AT) as GemSlot[]) {
+    const [cx, cy] = GEM_AT[slot];
+    const gem = document.createElementNS(SVG_NS, "path");
+    gem.setAttribute("d", `M${cx} ${cy - GEM_REACH}L${cx + GEM_REACH} ${cy}L${cx} ${cy + GEM_REACH}L${cx - GEM_REACH} ${cy}Z`);
+    gem.setAttribute("stroke-width", "1.1");
+    gem.setAttribute("stroke-linejoin", "round");
+    gems.set(slot, gem);
+    el.append(gem);
+  }
+  let drawn = "";
+  return {
+    el,
+    draw(provider) {
+      if (provider === drawn) return;
+      drawn = provider;
+      for (const { slot, color, on } of markFor(provider)) {
+        const gem = gems.get(slot)!;
+        gem.setAttribute("fill", color);
+        gem.setAttribute("stroke", color);
+        gem.setAttribute("class", on ? "gem on" : "gem");
+      }
+    },
+  };
+}
+
+// ── The specks behind Liv ─────────────────────────────────────────────────────
+
+/** One speck for every this many px² of the room, within these counts: fewer than in the Liv window's wide bands. */
+const STARS = { per: 1100, min: 10, max: 40 } as const;
+/** How tall the room is counted as when they are first spread: the chat's card at its usual height. */
+const ROOM_H = 230;
+
+function buildStars() {
+  const el = h("canvas", { class: "chat-stars" }) as HTMLCanvasElement;
+  let field: Particle[] = [];
+  let pointer: Point | null = null;
+  let strength = 0;
+  let last = 0;
+  /** The room they were last drawn in, px. */
+  let room = { w: 0, h: 0 };
+  /** "r,g,b" of the colour the specks were last drawn in. */
+  let tinted = { hex: "", rgb: "" };
+  return {
+    el,
+    /** Where the pointer is over the card, to push them away; null once it leaves. */
+    pointer(e: PointerEvent | null) {
+      if (!e) {
+        pointer = null;
+        return;
+      }
+      const box = el.getBoundingClientRect();
+      pointer = { x: e.clientX - box.left, y: e.clientY - box.top };
+    },
+    /** The next frame comes after a pause: no jump when they move again. */
+    rest() {
+      last = 0;
+    },
+    draw(nowMs: number, color: string) {
+      const w = el.clientWidth;
+      const height = el.clientHeight;
+      const ctx = w && height ? el.getContext?.("2d") : null;
+      if (!ctx) return;
+      const dt = last ? Math.min(0.05, (nowMs - last) / 1000) : 0;
+      last = nowMs;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      if (el.width !== Math.round(w * dpr) || el.height !== Math.round(height * dpr)) {
+        el.width = Math.round(w * dpr);
+        el.height = Math.round(height * dpr);
+      }
+      if (field.length === 0) field = seedParticles(w, height, particleCount(w, ROOM_H, STARS.per, STARS.min, STARS.max));
+      // The card grows with the conversation, and from nothing as the island
+      // opens: they keep their places in it, spread over the whole room.
+      if (room.w !== w || room.h !== height) {
+        if (room.w && room.h) for (const p of field) (p.x *= w / room.w), (p.y *= height / room.h);
+        room = { w, h: height };
+      }
+      if (tinted.hex !== color) {
+        const [r, g, b] = hexToRGB(color);
+        tinted = { hex: color, rgb: `${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)}` };
+      }
+      strength += ((pointer ? 1 : 0) - strength) * Math.min(1, dt * 4);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, el.width, el.height);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paintParticles(ctx, field, dt, nowMs / 1000, w, height, pointer, strength, (white, alpha) =>
+        `rgba(${white ? "255,255,255" : tinted.rgb},${alpha})`,
+      );
     },
   };
 }

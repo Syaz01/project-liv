@@ -8,6 +8,7 @@
 // scrolled out of sight. The Livs ride on that loop: they are drawn on the
 // frames the bands ask for, and ask for none themselves.
 
+import { paintParticles, particleCount, seedParticles, type Particle } from "../core/particles";
 import { pillDefinition } from "../core/pills";
 import { hexToRGB, placeInBox } from "../robot/look";
 import type { Outfit } from "../robot/outfits";
@@ -147,17 +148,6 @@ function rgba(hex: string, alpha: number): string {
 
 // ── The backdrop ──────────────────────────────────────────────────────────────
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  r: number;
-  depth: number;
-  phase: number;
-  white: boolean;
-}
-
 /** The deep black, the colour and the particles, on `canvas`; `pointerFrom` is
  *  the element whose pointer pushes the particles. */
 function backdrop(canvas: HTMLCanvasElement, color: string, pointerFrom: HTMLElement, radius = 18) {
@@ -170,26 +160,12 @@ function backdrop(canvas: HTMLCanvasElement, color: string, pointerFrom: HTMLEle
   });
   pointerFrom.addEventListener("pointerleave", () => (pointer = null));
 
-  const seed = (w: number, h: number) => {
-    const count = Math.round(Math.min(90, Math.max(24, (w * h) / 2600)));
-    particles = Array.from({ length: count }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      vx: (Math.random() - 0.5) * 6,
-      vy: -2 - Math.random() * 6,
-      r: 0.5 + Math.random() * 1.4,
-      depth: 0.35 + Math.random() * 0.65,
-      phase: Math.random() * Math.PI * 2,
-      white: Math.random() < 0.35,
-    }));
-  };
-
   add({
     el: canvas,
     draw(dt, t) {
       const { w, h, ctx } = fit(canvas);
       if (!ctx || w === 0) return;
-      if (particles.length === 0) seed(w, h);
+      if (particles.length === 0) particles = seedParticles(w, h, particleCount(w, h));
       strength += ((pointer ? 1 : 0) - strength) * Math.min(1, dt * 4);
       ctx.clearRect(0, 0, w, h);
       ctx.save();
@@ -211,43 +187,8 @@ function backdrop(canvas: HTMLCanvasElement, color: string, pointerFrom: HTMLEle
       ctx.fillStyle = rad;
       ctx.fillRect(0, 0, w, h);
 
-      for (const p of particles) {
-        // Drift, always; the pointer pushes them away.
-        p.x += p.vx * dt * p.depth;
-        p.y += p.vy * dt * p.depth;
-        let alpha = (0.22 + 0.5 * (0.5 + 0.5 * Math.sin(t * (1.2 + p.depth) + p.phase))) * p.depth;
-        let r = p.r;
-        if (pointer && strength > 0.01) {
-          const dx = p.x - pointer.x;
-          const dy = p.y - pointer.y;
-          const d = Math.hypot(dx, dy);
-          if (d < 140 && d > 0.1) {
-            const push = (1 - d / 140) * 90 * strength * dt;
-            p.x += (dx / d) * push;
-            p.y += (dy / d) * push;
-          }
-          if (d < 200) {
-            const near = (1 - d / 200) * strength;
-            alpha += near * 0.6;
-            r *= 1 + near * 0.8;
-          }
-        }
-        if (p.y < -4) p.y = h + 4;
-        if (p.y > h + 4) p.y = -4;
-        if (p.x < -4) p.x = w + 4;
-        if (p.x > w + 4) p.x = -4;
-        const tint = p.white ? "#FFFFFF" : color;
-        if (r > 1.1) {
-          ctx.fillStyle = rgba(tint, Math.min(1, alpha) * 0.12);
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, r * 2.6, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.fillStyle = rgba(tint, Math.min(1, alpha));
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      // They drift, always; the pointer pushes them away (core/particles.ts).
+      paintParticles(ctx, particles, dt, t, w, h, pointer, strength, (white, alpha) => rgba(white ? "#FFFFFF" : color, alpha));
       ctx.restore();
     },
   });

@@ -51,6 +51,83 @@ test("the model button shows the active provider's model", () => {
   assert.equal($(".model-name").textContent, "Choose a model");
 });
 
+/** The gems of the mark: which is lit, and in what colour. */
+const gems = () => $(".model-btn").find("path").map((g) => `${g.getAttribute("class")} ${g.getAttribute("fill")}`);
+
+test("the mark above the send button shows who answers, and its tooltip spells the model", () => {
+  assert.deepEqual(gems(), ["gem on #E07950", "gem #4285F4", "gem #10A37F", "gem #6467F2"]);
+  assert.equal($(".model-btn").title, "Anthropic · claude-opus-5-5");
+  State.settings = { ...State.settings, chatProvider: "google" };
+  view.sync();
+  assert.deepEqual(gems(), ["gem #E07950", "gem on #4285F4", "gem #10A37F", "gem #6467F2"]);
+  assert.equal($(".model-btn").title, "Google · gemini-2.0-flash");
+  // Any other provider is the gem below, in its own colour.
+  State.settings = { ...State.settings, chatProvider: "ollama", chatModels: { ollama: "llama3.2" } };
+  view.sync();
+  assert.deepEqual(gems(), ["gem #E07950", "gem #4285F4", "gem #10A37F", "gem on #FACC15"]);
+  assert.equal($(".model-btn").title, "Ollama · llama3.2");
+});
+
+test("a new chat: the button appears with the conversation, empties it and tells Rust", async () => {
+  const fresh = $(".new-chat");
+  assert.equal(fresh.style.display, "none");
+  let resized = 0;
+  view = buildPrompt(() => resized++);
+  State.chatHistory = [
+    { id: 1, role: "user", content: "hola" },
+    { id: 2, role: "assistant", content: "¡Hola!" },
+  ];
+  State.droppedFile = { name: "notas.txt", path: "C:/inbox/notas.txt" };
+  view.sync();
+  assert.equal($(".new-chat").style.display, "");
+  assert.equal(view.el.find(".chat-row").length, 2);
+
+  $(".new-chat").fire("click");
+  view.sync(); // what State.notify() does in the island
+  assert.deepEqual(State.chatHistory, []);
+  assert.equal(State.droppedFile, null);
+  assert.equal(sent("chat_reset").length, 1);
+  assert.equal(view.el.find(".chat-row").length, 0);
+  assert.equal($(".new-chat").style.display, "none");
+  assert.equal(resized, 1, "the island goes back to an empty chat's height");
+  assert.equal($(".chat-input").placeholder, "Ask me anything…");
+});
+
+test("no new chat while an answer is on its way: it would land in it", async () => {
+  let finish;
+  answers.chat_send = () => new Promise((resolve) => (finish = resolve));
+  $(".chat-input").value = "hello";
+  $(".send-btn").fire("click");
+  await flush();
+  view.sync();
+  assert.ok($(".new-chat").disabled);
+  $(".new-chat").fire("click");
+  assert.equal(State.chatHistory.length, 1);
+  assert.deepEqual(sent("chat_reset"), []);
+  finish({ text: "Hi!" });
+  await flush();
+  view.sync();
+  assert.ok(!$(".new-chat").disabled);
+  assert.equal($(".new-chat").style.display, "");
+});
+
+test("the specks behind Liv ask for frames only on the open island, in sight and not paused", () => {
+  State.mode = "expanded";
+  assert.equal(view.tick(1000), true);
+  for (const mode of ["hidden", "compact", "peek"]) {
+    State.mode = mode;
+    assert.equal(view.tick(1016), false, mode);
+  }
+  State.mode = "expanded";
+  State.paused = true;
+  assert.equal(view.tick(1032), false);
+  State.paused = false;
+  State.parked = true;
+  assert.equal(view.tick(1048), false);
+  State.parked = false;
+  State.mode = "hidden";
+});
+
 test("a provider without a key is never asked for its models", async () => {
   answers.secret_present = false;
   answers.claude_ready = false;
