@@ -2,6 +2,55 @@
   "about": "What's new, shown once in the island after Liv is updated (src/whats-new/). Every release adds its entry here, in English and Spanish: 1 to 4 items, a short title and one line each, an icon from ICON_NAMES (whats-new.ts). tests/whats-new.test.mjs checks the entry of the version that ships.",
   "releases": [
     {
+      "version": "0.1.2",
+      "items": [
+        {
+          "icon": "clock",
+          "title": {
+            "en": "Folds as the pointer leaves",
+            "es": "Se pliega al salir el cursor"
+          },
+          "detail": {
+            "en": "The open island folds as soon as the pointer leaves it, whether you clicked inside or not.",
+            "es": "La isla abierta se pliega en cuanto el cursor la deja, hayas hecho clic dentro o no."
+          }
+        },
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "Files only in front of the island",
+            "es": "Archivos solo delante de la isla"
+          },
+          "detail": {
+            "en": "A file being dragged wakes the drop card only right next to the island.",
+            "es": "Un archivo arrastrado activa la tarjeta de soltar solo junto a la isla."
+          }
+        },
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "It wakes without a jump",
+            "es": "Despierta sin saltos"
+          },
+          "detail": {
+            "en": "The closed island no longer jumps to the left as it wakes.",
+            "es": "La isla cerrada ya no salta a la izquierda al despertar."
+          }
+        },
+        {
+          "icon": "terminal",
+          "title": {
+            "en": "More specks, and the office tab",
+            "es": "Más motas y la pestaña de la oficina"
+          },
+          "detail": {
+            "en": "Specks behind Liv in more cards, in the colour of the pill in front, and a tab for the virtual office.",
+            "es": "Motas detrás de Liv en más tarjetas, del color de la píldora que está delante, y una pestaña para la oficina virtual."
+          }
+        }
+      ]
+    },
+    {
       "version": "0.1.1",
       "items": [
         {
