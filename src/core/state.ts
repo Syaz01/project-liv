@@ -136,6 +136,8 @@ export interface Settings {
   chatModels: Record<string, string>;
   /** Settings → Chat → Your AI subscriptions: each provider's switch (cli_relay.rs). */
   chatSubscriptions: Record<string, boolean>;
+  /** The model picked for the tool that answers on a provider's subscription: one of the tool's own, not the API's. None: the tool's own choice. */
+  chatToolModels: Record<string, string>;
   /** Model server addresses once connected; empty means not connected. */
   ollamaUrl: string;
   lmstudioUrl: string;
@@ -197,6 +199,7 @@ export const DEFAULT_SETTINGS: Settings = {
   chatProvider: "anthropic",
   chatModels: {},
   chatSubscriptions: {},
+  chatToolModels: {},
   ollamaUrl: "",
   lmstudioUrl: "",
   customUrl: "",

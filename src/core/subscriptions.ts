@@ -3,6 +3,7 @@
 // and kept until the next ask.
 
 import { Bridge, type SubscriptionStatus } from "./bridge";
+import { toolModel } from "./providers";
 import type { Settings } from "./state";
 
 let rows: SubscriptionStatus[] = [];
@@ -26,9 +27,14 @@ export function subscribedProviders(): Set<string> {
   return new Set(rows.filter((r) => r.on).map((r) => r.provider));
 }
 
-/** The model chip: the tool's name when it answers (with Claude's model for Claude Code). */
+/**
+ * The model chip: the tool's name when it answers, after the model it was
+ * asked for — Claude's for Claude Code, one of its own for the others, none
+ * when the choice is left to the tool.
+ */
 export function chipLabel(settings: Settings, model: string): string {
   const sub = subscription(settings.chatProvider);
   if (!sub?.on) return model;
-  return settings.chatProvider === "anthropic" && model ? `${model} · ${sub.tool}` : sub.tool;
+  const asked = settings.chatProvider === "anthropic" ? model : toolModel(settings, settings.chatProvider);
+  return asked ? `${asked} · ${sub.tool}` : sub.tool;
 }

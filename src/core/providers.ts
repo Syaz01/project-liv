@@ -62,6 +62,23 @@ export function withModel(settings: Settings, provider: ProviderId, model: strin
 }
 
 /**
+ * The model picked for the tool that answers on `provider`'s subscription
+ * (cli_relay.rs): one of the tool's own models, kept apart from the API's.
+ * Empty: the model chosen in the tool itself.
+ */
+export function toolModel(settings: Settings, provider: string): string {
+  return settings.chatToolModels?.[provider] ?? "";
+}
+
+/** `settings` with `model` picked for `provider`'s tool; empty goes back to the tool's own choice. */
+export function withToolModel(settings: Settings, provider: string, model: string): Settings {
+  const chatToolModels = { ...settings.chatToolModels };
+  if (model) chatToolModels[provider] = model;
+  else delete chatToolModels[provider];
+  return { ...settings, chatToolModels };
+}
+
+/**
  * The chips of the picker: every cloud provider (one without a key says so
  * when picked), a model server once it is connected, and Cursor or Copilot
  * once their subscription is on (`subscribed`: the providers whose switch is

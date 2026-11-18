@@ -13,7 +13,7 @@ import { ICONS } from "./icons";
 import { renderMarkdown } from "./markdown";
 import { Bridge, onEvent, type ChatContext, type ModelInfo } from "../core/bridge";
 import {
-  activeModel, pickModel, providerDef, visibleProviders, withModel, type ProviderDef,
+  activeModel, pickModel, providerDef, toolModel, visibleProviders, withModel, withToolModel, type ProviderDef,
 } from "../core/providers";
 import { chatSettingsTarget } from "../core/settings-target";
 import { Sound } from "../core/sound";
@@ -96,7 +96,7 @@ function buildPicker(onChange: () => void): Picker {
     h("div", { class: "picker-col picker-main" }, h("div", { class: "picker-head", text: tl(STRINGS.model) }), list),
   );
 
-  /** Models already asked for, by provider; a model server is asked again each time. */
+  /** Models already asked for, by provider; a model server or a subscription's tool is asked again each time. */
   const cache = new Map<string, ModelInfo[]>();
   let isOpen = false;
   let request = 0;
@@ -141,9 +141,12 @@ function buildPicker(onChange: () => void): Picker {
 
   function drawModels(p: ProviderDef, models: ModelInfo[]) {
     clear(list);
-    // Through a subscription, a tool other than Claude Code uses its own model ("").
-    const ownModel = subscription(p.id)?.on && p.id !== "anthropic";
-    const current = ownModel ? "" : activeModel(State.settings);
+    // Through a subscription, a tool other than Claude Code has models of its
+    // own: the one it chose itself (""), then the ones it lists.
+    const ownModel = Boolean(subscription(p.id)?.on) && p.id !== "anthropic";
+    const picked = ownModel ? toolModel(State.settings, p.id) : activeModel(State.settings);
+    // One the tool no longer offers: its own choice is what shows as picked.
+    const current = ownModel && !models.some((m) => m.id === picked) ? "" : picked;
     for (const m of models) {
       const on = m.id === current;
       const row = h(
@@ -155,8 +158,9 @@ function buildPicker(onChange: () => void): Picker {
         on ? svg(ICONS.check, 11, { stroke: 2.2 }) : null,
       );
       row.addEventListener("click", () => {
-        if (!m.id) return close();
-        State.settings = withModel(State.settings, p.id, m.id);
+        if (ownModel) State.settings = withToolModel(State.settings, p.id, m.id);
+        else if (!m.id) return close();
+        else State.settings = withModel(State.settings, p.id, m.id);
         saveSettings();
         Sound.play("blip");
         close();
@@ -171,7 +175,10 @@ function buildPicker(onChange: () => void): Picker {
     const ticket = ++request;
     const subscribed = subscription(p.id)?.on ?? false;
     const cacheKey = `${p.id}:${subscribed}`;
-    const cached = p.urlField ? undefined : cache.get(cacheKey);
+    // A model server is asked each time, and so is a subscription's tool: its
+    // list is its own to change, and Rust keeps it for a while (cli_relay.rs).
+    const asked = Boolean(p.urlField) || (subscribed && p.id !== "anthropic");
+    const cached = asked ? undefined : cache.get(cacheKey);
     if (cached) {
       drawModels(p, cached);
       return;
@@ -186,7 +193,7 @@ function buildPicker(onChange: () => void): Picker {
     try {
       const models = await Bridge.chatModels(p.id);
       if (ticket !== request) return;
-      if (!p.urlField) cache.set(cacheKey, models);
+      if (!asked) cache.set(cacheKey, models);
       const keep = subscribed && p.id !== "anthropic" ? null : pickModel(p, models.map((m) => m.id), activeModel(State.settings));
       if (keep && keep !== activeModel(State.settings)) {
         State.settings = withModel(State.settings, p.id, keep);

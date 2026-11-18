@@ -10,6 +10,7 @@ import { calls, emit, internals, sent } from "./tauri.mjs";
 installFakeDom();
 const { buildPrompt } = await import("../src/views/chat.ts");
 const { DEFAULT_SETTINGS, State } = await import("../src/core/state.ts");
+const { setSubscriptions } = await import("../src/core/subscriptions.ts");
 
 /** What the mocked Rust side answers, by command. */
 let answers;
@@ -26,6 +27,7 @@ let view;
 beforeEach(() => {
   calls.length = 0;
   answers = {};
+  setSubscriptions([]);
   State.settings = { ...DEFAULT_SETTINGS, chatModels: {} };
   State.chatHistory = [];
   State.stateOverride = null;
@@ -104,6 +106,47 @@ test("switching provider saves it and asks the new provider only", async () => {
   assert.equal(State.settings.chatModels.google, "gemini-2.5-flash");
   assert.equal(sent("save_settings").at(-1).settings.chatModels.google, "gemini-2.5-flash");
   assert.deepEqual(models(), ["gemini-2.5-flash"]);
+});
+
+test("on a subscription the tool's own models are listed, and the one picked is kept apart from the API's", async () => {
+  State.settings = { ...State.settings, chatProvider: "openai", chatModels: { openai: "gpt-4o" } };
+  answers.subscription_status = [
+    { provider: "openai", tool: "Codex CLI", on: true, installed: true, signIn: "codex login", installUrl: "https://x", subscriptionOnly: false },
+  ];
+  answers.chat_models = [
+    { id: "", label: "The model chosen in Codex CLI" },
+    { id: "gpt-6.2-sol", label: "GPT-6.2-Sol" },
+    { id: "gpt-6-luna", label: "GPT-6-Luna" },
+  ];
+  $(".model-btn").fire("click");
+  await flush();
+  // No key is needed, and the API's model is not one of the tool's: its own choice is the one picked.
+  assert.deepEqual(sent("secret_present"), []);
+  assert.deepEqual(models(), ["The model chosen in Codex CLI", "GPT-6.2-Sol", "GPT-6-Luna"]);
+  assert.deepEqual(view.el.find(".picker-model").map((m) => m.classList.contains("on")), [true, false, false]);
+  assert.equal($(".model-name").textContent, "Codex CLI");
+
+  view.el.find(".picker-model")[1].fire("click");
+  assert.equal(State.settings.chatToolModels.openai, "gpt-6.2-sol");
+  assert.equal(State.settings.chatModels.openai, "gpt-4o");
+  assert.equal(sent("save_settings").at(-1).settings.chatToolModels.openai, "gpt-6.2-sol");
+  assert.ok(!$(".chat-body").classList.contains("picking"));
+  assert.equal($(".model-name").textContent, "gpt-6.2-sol · Codex CLI");
+
+  // Opened again the tool is asked again, the one picked is marked, and its own choice can be taken back.
+  $(".model-btn").fire("click");
+  await flush();
+  assert.equal(sent("chat_models").length, 2);
+  assert.deepEqual(view.el.find(".picker-model").map((m) => m.classList.contains("on")), [false, true, false]);
+  view.el.find(".picker-model")[0].fire("click");
+  assert.deepEqual(State.settings.chatToolModels, {});
+  assert.equal($(".model-name").textContent, "Codex CLI");
+
+  // A model the tool no longer lists: its own choice shows as picked.
+  State.settings = { ...State.settings, chatToolModels: { openai: "gpt-gone" } };
+  $(".model-btn").fire("click");
+  await flush();
+  assert.deepEqual(view.el.find(".picker-model").map((m) => m.classList.contains("on")), [true, false, false]);
 });
 
 test("the picker: providers down the left, models beside them, and a taller island while it is open", async () => {

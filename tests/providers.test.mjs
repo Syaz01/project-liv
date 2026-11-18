@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   PROVIDERS, activeModel, chatReady, isLoopbackHost, pickModel, providerDef, urlExposure, visibleProviders,
-  withModel,
+  toolModel, withModel, withToolModel,
 } from "../src/core/providers.ts";
 import { DEFAULT_SETTINGS } from "../src/core/state.ts";
 
@@ -103,4 +103,17 @@ test("the chat can answer with its provider's key, its server, or the user's sub
   // Cursor and Copilot answer only through the subscription.
   assert.equal(chatReady(settings({ chatProvider: "cursor" }), undefined, true), false);
   assert.equal(chatReady(settings({ chatProvider: "cursor" }), on, false), true);
+});
+
+test("a subscription's tool has a model of its own, apart from the API's", () => {
+  const api = settings({ chatModels: { openai: "gpt-4o" } });
+  assert.equal(toolModel(api, "openai"), "");
+  const picked = withToolModel(api, "openai", "gpt-6.2-sol");
+  assert.equal(toolModel(picked, "openai"), "gpt-6.2-sol");
+  assert.equal(picked.chatModels.openai, "gpt-4o");
+  assert.deepEqual(api.chatToolModels, {});
+  // Back to the tool's own choice: nothing is kept for it.
+  assert.deepEqual(withToolModel(picked, "openai", "").chatToolModels, {});
+  // A settings file from before the field existed.
+  assert.equal(toolModel({ ...api, chatToolModels: undefined }, "openai"), "");
 });

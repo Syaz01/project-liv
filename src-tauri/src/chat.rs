@@ -198,10 +198,11 @@ pub async fn send(
 ) -> Result<ChatReply, String> {
     let context = context.map(checked_context).transpose()?;
     let provider = settings.chat_provider.as_str();
-    let model = model_for(settings, provider);
     if cli_relay::uses_subscription(settings, provider) {
+        let model = cli_relay::model_for(settings, provider);
         return cli_relay::send(chat, provider, &model, query, context).await;
     }
+    let model = model_for(settings, provider);
     if provider == ANTHROPIC || provider.is_empty() {
         return claude::send(chat, &model, query, context).await;
     }
@@ -220,7 +221,7 @@ pub async fn send(
 pub async fn models(settings: &Settings, provider: &str) -> Result<Vec<ModelInfo>, String> {
     let no_key = || crate::i18n::t("No API key — add it in Settings.");
     if cli_relay::uses_subscription(settings, provider) {
-        return Ok(cli_relay::models(provider));
+        return Ok(cli_relay::models(provider).await);
     }
     if provider == ANTHROPIC {
         return claude::available_models().await;

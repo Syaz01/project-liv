@@ -16,7 +16,8 @@
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::time::Duration;
+use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -29,6 +30,9 @@ use crate::{claude_code, platform, secrets, settings};
 
 /// How long a chat turn may take: it may search the web.
 const CHAT_TIMEOUT: Duration = Duration::from_secs(180);
+/// How long a tool may take to list its models, and how long its list is kept.
+const MODELS_TIMEOUT: Duration = Duration::from_secs(12);
+const MODELS_KEPT: Duration = Duration::from_secs(600);
 /// A dropped text file's contents go in the prompt up to this size.
 const MAX_INLINE_TEXT: u64 = 200_000;
 
@@ -181,13 +185,112 @@ pub fn status(settings: &Settings) -> Vec<Status> {
         .collect()
 }
 
-/// The models offered in the picker: Claude Code's, else the tool's own choice.
-pub fn models(provider: &str) -> Vec<ModelInfo> {
+/// The model the chat asks `provider`'s tool for: Claude's for Claude Code,
+/// else the one picked among the tool's own. Empty: the tool's own choice.
+pub fn model_for(settings: &Settings, provider: &str) -> String {
+    if provider == "anthropic" {
+        return chat::model_for(settings, provider);
+    }
+    settings.chat_tool_models.get(provider).map(|m| m.trim().to_string()).unwrap_or_default()
+}
+
+/// The models offered in the picker: Claude Code's; else the tool's own choice
+/// first, then the models the tool itself lists, when it can list them.
+pub async fn models(provider: &str) -> Vec<ModelInfo> {
     if provider == "anthropic" {
         return claude_code::models();
     }
-    let tool = installed(provider).map(|(cli, _)| cli).unwrap_or(clis_for(provider)[0]);
-    vec![ModelInfo { id: String::new(), label: tf("The model chosen in {tool}", &[("tool", tool.name())]) }]
+    let found = installed(provider);
+    let tool = found.as_ref().map(|(cli, _)| *cli).unwrap_or(clis_for(provider)[0]);
+    let mut out =
+        vec![ModelInfo { id: String::new(), label: tf("The model chosen in {tool}", &[("tool", tool.name())]) }];
+    if let Some((cli, exe)) = found {
+        out.extend(tool_models(cli, &exe).await);
+    }
+    out
+}
+
+// ── The models a tool lists ───────────────────────────────────────────────────
+
+/// What to ask a tool for its models: Antigravity CLI and Codex CLI have a
+/// command for it. The others answer with the model chosen in them.
+fn models_args(cli: Cli) -> Option<&'static [&'static str]> {
+    match cli {
+        Cli::Antigravity => Some(&["models"]),
+        Cli::Codex => Some(&["debug", "models"]),
+        Cli::Claude | Cli::Gemini | Cli::Cursor | Cli::Copilot => None,
+    }
+}
+
+/// The lists already asked for, by tool, and when: the picker opens at once.
+static MODEL_LISTS: Mutex<Vec<(Cli, Instant, Vec<ModelInfo>)>> = Mutex::new(Vec::new());
+
+/// The tool's own models, asked of the tool itself (Liv makes no network call
+/// of its own). Empty when it has no such command, or could not answer.
+async fn tool_models(cli: Cli, exe: &Path) -> Vec<ModelInfo> {
+    let Some(args) = models_args(cli) else { return Vec::new() };
+    let kept = MODEL_LISTS
+        .lock()
+        .unwrap()
+        .iter()
+        .find(|(tool, at, _)| *tool == cli && at.elapsed() < MODELS_KEPT)
+        .map(|(_, _, list)| list.clone());
+    if let Some(list) = kept {
+        return list;
+    }
+    let list = list_models(cli, exe, args).await.unwrap_or_default();
+    if !list.is_empty() {
+        let mut lists = MODEL_LISTS.lock().unwrap();
+        lists.retain(|(tool, _, _)| *tool != cli);
+        lists.push((cli, Instant::now(), list.clone()));
+    }
+    list
+}
+
+async fn list_models(cli: Cli, exe: &Path, args: &[&str]) -> Option<Vec<ModelInfo>> {
+    let workdir = settings::local_dir().join("relay");
+    std::fs::create_dir_all(&workdir).ok()?;
+    let mut cmd = command(exe, &workdir);
+    cmd.args(args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::null());
+    let output = tokio::time::timeout(MODELS_TIMEOUT, cmd.output()).await.ok()?.ok()?;
+    let text = String::from_utf8_lossy(&output.stdout);
+    Some(match cli {
+        Cli::Codex => parse_codex_models(&text),
+        _ => parse_listed_models(&text),
+    })
+}
+
+/// `agy models`: one model per line — its id, a tab, its name. Anything else
+/// it prints is not a model.
+fn parse_listed_models(stdout: &str) -> Vec<ModelInfo> {
+    stdout
+        .lines()
+        .filter_map(|line| {
+            let (id, label) = line.split_once('\t')?;
+            let (id, label) = (id.trim(), label.trim());
+            let named = !id.is_empty() && !label.is_empty() && !id.contains(char::is_whitespace);
+            named.then(|| ModelInfo { id: id.to_string(), label: label.to_string() })
+        })
+        .collect()
+}
+
+/// `codex debug models`: `{"models": [{"slug", "display_name", "visibility",
+/// "priority"}, …]}`. The ones Codex lists in its own picker, in its order.
+fn parse_codex_models(stdout: &str) -> Vec<ModelInfo> {
+    let Ok(json) = serde_json::from_str::<Value>(stdout.trim()) else { return Vec::new() };
+    let mut listed: Vec<(i64, ModelInfo)> = json["models"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|model| model["visibility"] == "list")
+        .filter_map(|model| {
+            let id = model["slug"].as_str().map(str::trim).filter(|id| !id.is_empty())?;
+            let label = model["display_name"].as_str().map(str::trim).filter(|name| !name.is_empty()).unwrap_or(id);
+            Some((model["priority"].as_i64().unwrap_or(i64::MAX), ModelInfo { id: id.to_string(), label: label.to_string() }))
+        })
+        .collect();
+    listed.sort_by_key(|(priority, _)| *priority);
+    listed.into_iter().map(|(_, model)| model).collect()
 }
 
 // ── One run ───────────────────────────────────────────────────────────────────
@@ -294,21 +397,11 @@ fn prompt_on_stdin(cli: Cli, exe: &Path) -> bool {
     }
 }
 
-/// Runs the tool once and returns the text of its answer.
-async fn ask(cli: Cli, exe: &Path, r: &Request<'_>) -> Result<String, String> {
-    let workdir = settings::local_dir().join("relay");
-    std::fs::create_dir_all(&workdir).map_err(|e| e.to_string())?;
-    let stdin_prompt = prompt_on_stdin(cli, exe);
-
+/// A tool about to run in `workdir`, without a window, stopped if Liv stops
+/// waiting for it.
+fn command(exe: &Path, workdir: &Path) -> tokio::process::Command {
     let mut cmd = tokio::process::Command::new(exe);
-    cmd.args(args(cli, r, !stdin_prompt))
-        .current_dir(&workdir)
-        .env_remove("CLAUDECODE")
-        .env("NO_COLOR", "1")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .kill_on_drop(true);
+    cmd.current_dir(workdir).env_remove("CLAUDECODE").env("NO_COLOR", "1").kill_on_drop(true);
     // An npm install is a node script: its own folder first on PATH so it finds its Node.
     if let Some(dir) = exe.parent() {
         let mut dirs = vec![dir.to_path_buf()];
@@ -320,6 +413,17 @@ async fn ask(cli: Cli, exe: &Path, r: &Request<'_>) -> Result<String, String> {
         }
     }
     platform::no_console(cmd.as_std_mut());
+    cmd
+}
+
+/// Runs the tool once and returns the text of its answer.
+async fn ask(cli: Cli, exe: &Path, r: &Request<'_>) -> Result<String, String> {
+    let workdir = settings::local_dir().join("relay");
+    std::fs::create_dir_all(&workdir).map_err(|e| e.to_string())?;
+    let stdin_prompt = prompt_on_stdin(cli, exe);
+
+    let mut cmd = command(exe, &workdir);
+    cmd.args(args(cli, r, !stdin_prompt)).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let mut child = cmd
         .spawn()
@@ -517,7 +621,9 @@ pub async fn send(
             let _ = std::fs::write(&path, NO_WEB_POLICY);
             path
         });
-        let request = Request { model: None, system: &system, prompt: &prompt, web: !reads_file, no_web_policy: policy.as_deref() };
+        // Its own choice of model, unless one of its own was picked.
+        let picked = Some(model).filter(|m| !m.is_empty());
+        let request = Request { model: picked, system: &system, prompt: &prompt, web: !reads_file, no_web_policy: policy.as_deref() };
         ask(cli, &exe, &request).await?
     };
     // The record keeps the file's name, never its contents: later turns search the web.
@@ -574,6 +680,67 @@ pub fn set(settings: &mut Settings, provider: &str, on: bool) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn listed(models: &[ModelInfo]) -> Vec<(&str, &str)> {
+        models.iter().map(|m| (m.id.as_str(), m.label.as_str())).collect()
+    }
+
+    #[test]
+    fn antigravity_lists_its_models_one_per_line() {
+        let out = "Fetching available models...\ngemini-4-argon-high\tGemini 4 Argon (High)\r\n\nclaude-opus-5-5-low\tClaude Opus 5.5 (Low)\nnot a model\n\tNo id\n";
+        assert_eq!(
+            listed(&parse_listed_models(out)),
+            [("gemini-4-argon-high", "Gemini 4 Argon (High)"), ("claude-opus-5-5-low", "Claude Opus 5.5 (Low)")]
+        );
+        assert!(parse_listed_models("Not signed in.\n").is_empty());
+    }
+
+    #[test]
+    fn codex_lists_the_models_of_its_own_picker_in_its_order() {
+        let out = r#"{"models":[
+            {"slug":"gpt-6-luna","display_name":"GPT-6-Luna","visibility":"list","priority":8},
+            {"slug":"gpt-reserve","display_name":"GPT-Reserve","visibility":"hide","priority":4},
+            {"slug":"gpt-6.2-sol","display_name":"GPT-6.2-Sol","visibility":"list","priority":1},
+            {"slug":"bare","visibility":"list","priority":9},
+            {"display_name":"No slug","visibility":"list","priority":0}]}"#;
+        assert_eq!(
+            listed(&parse_codex_models(out)),
+            [("gpt-6.2-sol", "GPT-6.2-Sol"), ("gpt-6-luna", "GPT-6-Luna"), ("bare", "bare")]
+        );
+        assert!(parse_codex_models("error: not logged in").is_empty());
+        assert!(parse_codex_models("{}").is_empty());
+    }
+
+    #[test]
+    fn only_the_tools_with_a_command_for_it_are_asked_for_their_models() {
+        assert_eq!(models_args(Cli::Antigravity), Some(&["models"][..]));
+        assert_eq!(models_args(Cli::Codex), Some(&["debug", "models"][..]));
+        for cli in [Cli::Claude, Cli::Gemini, Cli::Cursor, Cli::Copilot] {
+            assert_eq!(models_args(cli), None);
+        }
+    }
+
+    #[test]
+    fn the_model_picked_for_a_tool_is_one_of_its_own() {
+        let mut s = Settings::default();
+        // The API's model of a provider is never the tool's.
+        s.chat_models.insert("openai".into(), "gpt-4o".into());
+        assert_eq!(model_for(&s, "openai"), "");
+        s.chat_tool_models.insert("openai".into(), " gpt-6.2-sol ".into());
+        assert_eq!(model_for(&s, "openai"), "gpt-6.2-sol");
+        assert_eq!(model_for(&s, "google"), "");
+        // Claude Code takes Claude's own model.
+        s.model = "claude-sonnet-5-5".into();
+        assert_eq!(model_for(&s, "anthropic"), "claude-sonnet-5-5");
+
+        let picked = Request { model: Some("gemini-4-argon-high"), ..request(true) };
+        assert_eq!(after(&strings(&args(Cli::Antigravity, &picked, true)), "--model").as_deref(), Some("gemini-4-argon-high"));
+        let codex = strings(&args(Cli::Codex, &Request { model: Some("gpt-6.2-sol"), ..request(true) }, false));
+        assert_eq!(after(&codex, "--model").as_deref(), Some("gpt-6.2-sol"));
+        assert_eq!(codex.last().map(String::as_str), Some("-"));
+        // None picked: the tool is not told which.
+        assert!(!strings(&args(Cli::Codex, &request(true), false)).contains(&"--model".to_string()));
+    }
 
     fn strings(args: &[OsString]) -> Vec<String> {
         args.iter().map(|a| a.to_string_lossy().into_owned()).collect()
