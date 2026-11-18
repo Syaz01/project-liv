@@ -49,6 +49,7 @@
       "icons/icon.ico"
     ],
     "resources": { "../target/release/liv-hook.exe": "liv-hook.exe" },
+    "publisher": "Los autores de Liv",
     "copyright": "Liv © 2026 los autores de Liv. Incluye código de Coucou, © 2026 Louis Raillé (licencia MIT).",
     "category": "DeveloperTool",
     "shortDescription": "A Dynamic Island for Windows",
