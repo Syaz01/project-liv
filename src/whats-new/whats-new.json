@@ -1,0 +1,32 @@
+{
+  "about": "What's new, shown once in the island after Liv is updated (src/whats-new/). Every release adds its entry here, in English and Spanish: 1 to 4 items, a short title and one line each, an icon from ICON_NAMES (whats-new.ts). tests/whats-new.test.mjs checks the entry of the version that ships.",
+  "releases": [
+    {
+      "version": "0.1.0",
+      "items": [
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "First version of Liv",
+            "es": "Primera versión de Liv"
+          },
+          "detail": {
+            "en": "A Dynamic Island for Windows, at the top of your screen.",
+            "es": "Una Dynamic Island para Windows, en lo alto de tu pantalla."
+          }
+        },
+        {
+          "icon": "terminal",
+          "title": {
+            "en": "Your coding agents in the island",
+            "es": "Tus agentes de programación en la isla"
+          },
+          "detail": {
+            "en": "Their sessions, questions and permission requests show up there.",
+            "es": "Sus sesiones, preguntas y solicitudes de permiso aparecen ahí."
+          }
+        }
+      ]
+    }
+  ]
+}

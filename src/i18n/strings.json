@@ -1,0 +1,1868 @@
+{
+  "_about": "Every string the app shows, keyed by its English text, with its Spanish translation (a counted string has `one` and `other`). Maintained by hand: tests/i18n.test.mjs checks that it carries exactly the keys the code uses. See src/i18n/i18n.ts.",
+  "strings": {
+    " is ready.": {
+      "es": " está listo."
+    },
+    "5 hours": {
+      "es": "5 horas"
+    },
+    "AI for the chat": {
+      "es": "IA para el chat"
+    },
+    "API key": {
+      "es": "Clave de API"
+    },
+    "Active pills": {
+      "es": "Píldoras activas"
+    },
+    "Activity": {
+      "es": "Actividad"
+    },
+    "Advertisement": {
+      "es": "Anuncio"
+    },
+    "Agent": {
+      "es": "Agente"
+    },
+    "Agents": {
+      "es": "Agentes"
+    },
+    "Allow": {
+      "es": "Permitir"
+    },
+    "Antigravity asks for permission in its terminal, as usual.": {
+      "es": "Antigravity pide permiso en su terminal, como siempre."
+    },
+    "Approve commands from the island": {
+      "es": "Aprobar comandos desde la isla"
+    },
+    "Approved": {
+      "es": "Aprobado"
+    },
+    "Ask Claude": {
+      "es": "Preguntar a Claude"
+    },
+    "Ask a question": {
+      "es": "Hacer una pregunta"
+    },
+    "Ask a question about it": {
+      "es": "Hacer una pregunta"
+    },
+    "Ask me anything…": {
+      "es": "Pregúntame lo que quieras…"
+    },
+    "Auto-close · {seconds}s": {
+      "es": "Cierre automático · {seconds}s"
+    },
+    "Back": {
+      "es": "Atrás"
+    },
+    "Before Antigravity runs a shell command that none of its rules covers, the island asks you first: Allow, Deny or Reply in terminal. Antigravity waits up to 2 min, then asks in its terminal. Liv can't see Antigravity's mode, so in Auto mode the island also asks about commands Antigravity would have run on its own.": {
+      "es": "Antes de que Antigravity ejecute un comando de shell que ninguna de sus reglas cubre, la isla te pregunta primero: Permitir, Denegar o Responder en la terminal. Antigravity espera hasta 2 min y luego pregunta en su terminal. Liv no ve el modo de Antigravity: en modo Auto, la isla también pregunta por comandos que Antigravity habría ejecutado por su cuenta."
+    },
+    "Busiest day": {
+      "es": "Día más activo"
+    },
+    "COMMANDS": {
+      "es": "COMANDOS"
+    },
+    "Cancel": {
+      "es": "Cancelar"
+    },
+    "Chat": {
+      "es": "Chat"
+    },
+    "Chat on the plan you already pay for. Liv asks your AI's official terminal tool, signed in with your own account: it never sees your password or your key.": {
+      "es": "Chatea con el plan que ya pagas. Liv usa la herramienta oficial de terminal de tu IA, con tu propia cuenta: nunca ve tu contraseña ni tu clave."
+    },
+    "Check now": {
+      "es": "Comprobar ahora"
+    },
+    "Checking the download…": {
+      "es": "Comprobando la descarga…"
+    },
+    "Choose a folder…": {
+      "es": "Elegir una carpeta…"
+    },
+    "Choose a project": {
+      "es": "Elegir un proyecto"
+    },
+    "Choose the tools you use. Liv only shows what you declare here.": {
+      "es": "Elige las herramientas que usas. Liv solo muestra lo que declares aquí."
+    },
+    "Claude Code finished": {
+      "es": "Claude Code terminó"
+    },
+    "Claude Code, Codex and the other agents Liv follows.": {
+      "es": "Claude Code, Codex y los demás agentes que sigue Liv."
+    },
+    "Claude plan": {
+      "es": "Plan de Claude"
+    },
+    "Clear history": {
+      "es": "Borrar historial"
+    },
+    "Click Install hooks once more, then restart Antigravity: hooks from an older Liv don't let it wait for your answer.": {
+      "es": "Haz clic otra vez en Instalar hooks y reinicia Antigravity: los hooks de una versión anterior de Liv no le dejan esperar tu respuesta."
+    },
+    "Close": {
+      "es": "Cerrar"
+    },
+    "Color": {
+      "es": "Color"
+    },
+    "Completed successfully.": {
+      "es": "Completado con éxito."
+    },
+    "Connect": {
+      "es": "Conectar"
+    },
+    "Connected": {
+      "es": "Conectado"
+    },
+    "Connected · loading…": {
+      "es": "Conectado · cargando…"
+    },
+    "Connecting…": {
+      "es": "Conectando…"
+    },
+    "Continue…": {
+      "es": "Continuar…"
+    },
+    "Copied": {
+      "es": "Copiado"
+    },
+    "Copy": {
+      "es": "Copiar"
+    },
+    "Liv is up to date": {
+      "es": "Liv está actualizado"
+    },
+    "Couldn't open the terminal in this folder.": {
+      "es": "No se pudo abrir la terminal en esta carpeta."
+    },
+    "Default": {
+      "es": "Predeterminado"
+    },
+    "Denied": {
+      "es": "Denegado"
+    },
+    "Deny": {
+      "es": "Denegar"
+    },
+    "Deployments": {
+      "es": "Despliegues"
+    },
+    "Diff too large": {
+      "es": "Diff demasiado grande"
+    },
+    "Disconnect": {
+      "es": "Desconectar"
+    },
+    "Done": {
+      "es": "Listo"
+    },
+    "Draft": {
+      "es": "Borrador"
+    },
+    "Liv has its own sounds. To replace one, put a file named peek, open, close, blip, tick, pop, send, work, finish, error, approval, question, approve or rate (.wav, .mp3, .ogg, .m4a, .aac or .flac) in the sounds folder, then Reload.": {
+      "es": "Liv trae sus propios sonidos. Para sustituir uno, deja en la carpeta de sonidos un archivo llamado peek, open, close, blip, tick, pop, send, work, finish, error, approval, question, approve o rate (.wav, .mp3, .ogg, .m4a, .aac o .flac) y haz clic en Recargar."
+    },
+    "Drop a file, or ask me anything.": {
+      "es": "Suelta un archivo o pregúntame lo que quieras."
+    },
+    "Drop your files here": {
+      "es": "Suelta tus archivos aquí"
+    },
+    "Edits": {
+      "es": "Edita"
+    },
+    "Emails": {
+      "es": "Correos"
+    },
+    "FILES": {
+      "es": "ARCHIVOS"
+    },
+    "Failed": {
+      "es": "Fallido"
+    },
+    "Fetches": {
+      "es": "Obtiene"
+    },
+    "General": {
+      "es": "General"
+    },
+    "Get it on GitHub": {
+      "es": "Abrir GitHub"
+    },
+    "Hooks installed": {
+      "es": "Hooks instalados"
+    },
+    "Hooks not installed": {
+      "es": "Hooks no instalados"
+    },
+    "Hovering the island opens it; it folds again shortly after the pointer leaves. Click inside to keep it open.": {
+      "es": "Pasar el puntero por la isla la abre; se pliega poco después de que el puntero salga. Haz clic dentro para dejarla abierta."
+    },
+    "Install it": {
+      "es": "Instalarlo"
+    },
+    "Integration": {
+      "es": "Integración"
+    },
+    "Integrations": {
+      "es": "Integraciones"
+    },
+    "Keep a history of my coding sessions": {
+      "es": "Guardar un historial de mis sesiones de programación"
+    },
+    "Key configured · {model}": {
+      "es": "Clave configurada · {model}"
+    },
+    "Key not configured": {
+      "es": "Clave no configurada"
+    },
+    "Language": {
+      "es": "Idioma"
+    },
+    "Later": {
+      "es": "Más tarde"
+    },
+    "Lists": {
+      "es": "Lista"
+    },
+    "Loading models…": {
+      "es": "Cargando modelos…"
+    },
+    "Loading…": {
+      "es": "Cargando…"
+    },
+    "Local models": {
+      "es": "Modelos locales"
+    },
+    "Longest session": {
+      "es": "Sesión más larga"
+    },
+    "Main": {
+      "es": "Principal"
+    },
+    "Model": {
+      "es": "Modelo"
+    },
+    "Music": {
+      "es": "Música"
+    },
+    "My PRs": {
+      "es": "Mis PRs"
+    },
+    "Navigate list items": {
+      "es": "Navegar por los elementos de la lista"
+    },
+    "Needs input": {
+      "es": "Necesita una respuesta"
+    },
+    "New Claude Code session": {
+      "es": "Nueva sesión de Claude Code"
+    },
+    "Next": {
+      "es": "Siguiente"
+    },
+    "No activity last week": {
+      "es": "Sin actividad la semana pasada"
+    },
+    "No calls scheduled": {
+      "es": "Sin llamadas programadas"
+    },
+    "No changes": {
+      "es": "Sin cambios"
+    },
+    "No contributions": {
+      "es": "Sin contribuciones"
+    },
+    "No detail available.": {
+      "es": "No hay detalles."
+    },
+    "No error details available.": {
+      "es": "No hay detalles del error disponibles."
+    },
+    "No setting found": {
+      "es": "Ningún ajuste encontrado"
+    },
+    "No thanks": {
+      "es": "No, gracias"
+    },
+    "None": {
+      "es": "Ninguno"
+    },
+    "Not connected": {
+      "es": "No conectado"
+    },
+    "Not playing": {
+      "es": "No está reproduciendo"
+    },
+    "Island": {
+      "es": "Isla"
+    },
+    "Notebook": {
+      "es": "Notebook"
+    },
+    "Nothing here": {
+      "es": "Nada aquí"
+    },
+    "Nothing running right now.": {
+      "es": "Nada en ejecución."
+    },
+    "OK": {
+      "es": "Aceptar"
+    },
+    "Off: the chat uses your API key below.": {
+      "es": "Desactivado: el chat usa tu clave de API de abajo."
+    },
+    "Open": {
+      "es": "Abrir"
+    },
+    "Open / close current diff": {
+      "es": "Abrir / cerrar diff actual"
+    },
+    "Open Claude": {
+      "es": "Abrir Claude"
+    },
+    "Open Liv": {
+      "es": "Abrir Liv"
+    },
+    "Open Settings": {
+      "es": "Abrir Ajustes"
+    },
+    "Open Spotify": {
+      "es": "Abrir Spotify"
+    },
+    "Open VS Code": {
+      "es": "Abrir VS Code"
+    },
+    "Open for every pill’s alerts": {
+      "es": "Abrir con los avisos de todas las píldoras"
+    },
+    "Open in n8n": {
+      "es": "Abrir en n8n"
+    },
+    "Open on hover": {
+      "es": "Abrir al pasar el puntero"
+    },
+    "Open selected item": {
+      "es": "Abrir elemento seleccionado"
+    },
+    "Open sounds folder": {
+      "es": "Abrir la carpeta de sonidos"
+    },
+    "Open terminal": {
+      "es": "Abrir terminal"
+    },
+    "Open {name}": {
+      "es": "Abrir {name}"
+    },
+    "Opens your terminal in the project, with Claude Code and your words.": {
+      "es": "Abre tu terminal en el proyecto, con Claude Code y tus palabras."
+    },
+    "Or into a session": {
+      "es": "O en una sesión"
+    },
+    "Overview": {
+      "es": "Resumen"
+    },
+    "Pause": {
+      "es": "Pausar"
+    },
+    "Payments": {
+      "es": "Pagos"
+    },
+    "Permissions": {
+      "es": "Permisos"
+    },
+    "Plan usage": {
+      "es": "Uso del plan"
+    },
+    "Play": {
+      "es": "Reproducir"
+    },
+    "Previous": {
+      "es": "Anterior"
+    },
+    "Projects": {
+      "es": "Proyectos"
+    },
+    "Quit": {
+      "es": "Salir"
+    },
+    "Reads": {
+      "es": "Lee"
+    },
+    "Ready": {
+      "es": "Listo"
+    },
+    "Ready · no setup needed": {
+      "es": "Listo · sin configuración"
+    },
+    "Recent": {
+      "es": "Reciente"
+    },
+    "Refresh": {
+      "es": "Actualizar"
+    },
+    "Reload sounds": {
+      "es": "Recargar sonidos"
+    },
+    "Remove": {
+      "es": "Quitar"
+    },
+    "Repeat off": {
+      "es": "Repetir desactivado"
+    },
+    "Repeat on": {
+      "es": "Repetir activado"
+    },
+    "Reply in terminal": {
+      "es": "Responder en la terminal"
+    },
+    "Resetting…": {
+      "es": "Reiniciando…"
+    },
+    "Runs": {
+      "es": "Ejecuta"
+    },
+    "SESSIONS": {
+      "es": "SESIONES"
+    },
+    "Save": {
+      "es": "Guardar"
+    },
+    "Schedule": {
+      "es": "Horario"
+    },
+    "Search settings": {
+      "es": "Buscar un ajuste"
+    },
+    "Searches": {
+      "es": "Busca"
+    },
+    "Searches the web": {
+      "es": "Busca en la web"
+    },
+    "Send": {
+      "es": "Enviar"
+    },
+    "Services": {
+      "es": "Servicios"
+    },
+    "Session finished": {
+      "es": "Sesión terminada"
+    },
+    "Session stopped on an error.": {
+      "es": "La sesión se detuvo por un error."
+    },
+    "Settings": {
+      "es": "Ajustes"
+    },
+    "Settings…": {
+      "es": "Ajustes…"
+    },
+    "Share image": {
+      "es": "Compartir imagen"
+    },
+    "Shortcuts": {
+      "es": "Atajos"
+    },
+    "Show Codex plan in the island's header": {
+      "es": "Mostrar el plan de Codex en la cabecera de la isla"
+    },
+    "Show in the island's header": {
+      "es": "Mostrar en la cabecera de la isla"
+    },
+    "Shows what is playing in any app: Spotify, the browser or another player.": {
+      "es": "Muestra lo que suena en cualquier app: Spotify, el navegador u otro reproductor."
+    },
+    "Shuffle off": {
+      "es": "Aleatorio desactivado"
+    },
+    "Shuffle on": {
+      "es": "Aleatorio activado"
+    },
+    "Sound": {
+      "es": "Sonido"
+    },
+    "Stripe, GitHub, Vercel, n8n, Notion and the rest.": {
+      "es": "Stripe, GitHub, Vercel, n8n, Notion y los demás."
+    },
+    "Success": {
+      "es": "Éxito"
+    },
+    "System": {
+      "es": "Sistema"
+    },
+    "TIME CODING": {
+      "es": "TIEMPO PROGRAMANDO"
+    },
+    "Tasks": {
+      "es": "Tareas"
+    },
+    "Tell me when a new version is out": {
+      "es": "Avisarme cuando salga una nueva versión"
+    },
+    "The model chosen in {tool}": {
+      "es": "El modelo elegido en {tool}"
+    },
+    "To review": {
+      "es": "Para revisar"
+    },
+    "Today": {
+      "es": "Hoy"
+    },
+    "Token": {
+      "es": "Token"
+    },
+    "Top agent": {
+      "es": "Agente más usado"
+    },
+    "Top project": {
+      "es": "Proyecto más activo"
+    },
+    "Update now": {
+      "es": "Actualizar ahora"
+    },
+    "Updates": {
+      "es": "Actualizaciones"
+    },
+    "Uploading {name}": {
+      "es": "Subiendo {name}"
+    },
+    "Volume": {
+      "es": "Volumen"
+    },
+    "Volume {0}%": {
+      "es": "Volumen {0}%"
+    },
+    "Waiting for a response from Claude Code": {
+      "es": "Esperando respuesta de Claude Code"
+    },
+    "Waiting for you in the terminal": {
+      "es": "Te espera en la terminal"
+    },
+    "Week": {
+      "es": "Semana"
+    },
+    "Weekly recap": {
+      "es": "Resumen semanal"
+    },
+    "What do you want to do with it?": {
+      "es": "¿Qué quieres hacer con él?"
+    },
+    "What should Claude do?": {
+      "es": "¿Qué debe hacer Claude?"
+    },
+    "When a pill other than the one shown finishes or hits an error, the island shows it for a moment, then the pill you had comes back.": {
+      "es": "Cuando otra píldora distinta de la mostrada termina o da un error, la isla la muestra un momento y luego vuelve la tuya."
+    },
+    "Where you code": {
+      "es": "Dónde programas"
+    },
+    "Workflow stopped.": {
+      "es": "Flujo de trabajo detenido."
+    },
+    "Writes": {
+      "es": "Escribe"
+    },
+    "Yes, tell me": {
+      "es": "Sí, avísame"
+    },
+    "Your AI subscriptions": {
+      "es": "Tus suscripciones de IA"
+    },
+    "Your Liv so far": {
+      "es": "Tu Liv hasta ahora"
+    },
+    "coding": {
+      "es": "programando"
+    },
+    "commands": {
+      "es": "comandos"
+    },
+    "file": {
+      "es": "archivo"
+    },
+    "files": {
+      "es": "archivos"
+    },
+    "in {h} h {m}": {
+      "es": "en {h} h {m}"
+    },
+    "in {m} min": {
+      "es": "en {m} min"
+    },
+    "just now": {
+      "es": "justo ahora"
+    },
+    "needs permission": {
+      "es": "necesita permiso"
+    },
+    "session": {
+      "es": "sesión"
+    },
+    "sessions": {
+      "es": "sesiones"
+    },
+    "{0} custom": {
+      "es": "{0} personalizados"
+    },
+    "{0} — open Spotify": {
+      "es": "{0} — abrir Spotify"
+    },
+    "{name} is ready.": {
+      "es": "{name} está listo."
+    },
+    "{n} h ago": {
+      "es": "hace {n} h"
+    },
+    "{n} min ago": {
+      "es": "hace {n} min"
+    },
+    "{tool} found ✓": {
+      "es": "{tool} encontrado ✓"
+    },
+    "{tool} not found.": {
+      "es": "No se encontró {tool}."
+    },
+    " · until {date}": {
+      "es": " · hasta el {date}"
+    },
+    "(stored)": {
+      "es": "(guardada)"
+    },
+    "+ subagent": {
+      "es": "+ subagente"
+    },
+    "A hook group named \"liv\" that Liv did not write is already there — Liv has not touched it.": {
+      "es": "Ya existe un grupo de hooks llamado «liv» que no escribió Liv — Liv no lo ha tocado."
+    },
+    "API error {code}": {
+      "es": "Error de API {code}"
+    },
+    "API key (optional)": {
+      "es": "Clave de API (opcional)"
+    },
+    "API key missing. Open settings.": {
+      "es": "Falta la clave de API. Abre los ajustes."
+    },
+    "Answer in terminal": {
+      "es": "Responder en la terminal"
+    },
+    "Answer it in your terminal.": {
+      "es": "Respóndela en tu terminal."
+    },
+    "Ask": {
+      "es": "Preguntar"
+    },
+    "Asking Codex…": {
+      "es": "Consultando a Codex…"
+    },
+    "Auto-close": {
+      "es": "Cierre automático"
+    },
+    "Back up and remove": {
+      "es": "Respaldar y quitar"
+    },
+    "Back up and write": {
+      "es": "Respaldar y escribir"
+    },
+    "Backup of {path} failed, nothing was written: {error}": {
+      "es": "Falló la copia de seguridad de {path}, no se escribió nada: {error}"
+    },
+    "Backup → {path}": {
+      "es": "Copia de seguridad → {path}"
+    },
+    "Bad API response: {error}": {
+      "es": "Respuesta de la API no válida: {error}"
+    },
+    "Can't read {path}: {error}": {
+      "es": "No se puede leer {path}: {error}"
+    },
+    "Canceled": {
+      "es": "Cancelado"
+    },
+    "Cannot copy: {error}": {
+      "es": "No se puede copiar: {error}"
+    },
+    "Cannot reach {url}. Is the server running?": {
+      "es": "No se puede contactar con {url}. ¿Está funcionando el servidor?"
+    },
+    "Cannot read {path}: {error}": {
+      "es": "No se puede leer {path}: {error}"
+    },
+    "Chat providers": {
+      "es": "Proveedores de chat"
+    },
+    "Chat with Google AI, OpenAI or OpenRouter instead of Claude: add a key here, then click the model name above the chat box to switch provider and model. Keys stay in the {store}. These providers get no web search and no tools: they can answer, never act on this computer.": {
+      "es": "Chatea con Google AI, OpenAI u OpenRouter en lugar de Claude: añade una clave aquí y luego haz clic en el nombre del modelo encima del cuadro de chat para cambiar de proveedor y modelo. Las claves se quedan en {store}. Estos proveedores no tienen búsqueda web ni herramientas: pueden responder, nunca actuar en este equipo."
+    },
+    "Chat with a model you run yourself: Ollama or LM Studio (leave the address empty for the usual one on this computer), or any server that speaks the OpenAI API, such as vLLM or llama.cpp. Once connected, pick it above the chat box.": {
+      "es": "Chatea con un modelo que ejecutas tú mismo: Ollama o LM Studio (deja la dirección vacía para usar la habitual en este equipo), o cualquier servidor compatible con la API de OpenAI, como vLLM o llama.cpp. Una vez conectado, elígelo encima del cuadro de chat."
+    },
+    "Choose a model": {
+      "es": "Elige un modelo"
+    },
+    "Classic token with the repo scope, or fine-grained with read access to Pull requests, Commit statuses and Actions.": {
+      "es": "Token clásico con el alcance repo, o detallado (fine-grained) con acceso de lectura a Pull requests, Commit statuses y Actions."
+    },
+    "Claude declined this one.": {
+      "es": "Claude ha rechazado esta petición."
+    },
+    "Claude needs an answer.": {
+      "es": "Claude necesita una respuesta."
+    },
+    "Claude plan usage": {
+      "es": "Uso del plan de Claude"
+    },
+    "Close the island": {
+      "es": "Cerrar la isla"
+    },
+    "Code": {
+      "es": "Código"
+    },
+    "Codex plan": {
+      "es": "Plan de Codex"
+    },
+    "Codex plan usage": {
+      "es": "Uso del plan de Codex"
+    },
+    "Codex runs new hooks only once you trust them: start Codex and review them once with /hooks.": {
+      "es": "Codex solo ejecuta hooks nuevos cuando confías en ellos: abre Codex y revísalos una vez con /hooks."
+    },
+    "Connect {name} in Settings → Local models first.": {
+      "es": "Conecta primero {name} en Ajustes → Modelos locales."
+    },
+    "Copied — paste it anywhere.": {
+      "es": "Copiada — pégala donde quieras."
+    },
+    "Copying images isn't available here — use Save image.": {
+      "es": "Aquí no se pueden copiar imágenes — usa Guardar imagen."
+    },
+    "Liv could not list the agents.": {
+      "es": "Liv no pudo listar los agentes."
+    },
+    "Liv counts your agent sessions as they happen — check back next Monday.": {
+      "es": "Liv cuenta tus sesiones de agentes a medida que ocurren — vuelve el próximo lunes."
+    },
+    "Liv is hooked into your Claude Code sessions. Tool calls, questions and permission requests show up in the island, and you can answer them there.": {
+      "es": "Liv está conectado a tus sesiones de Claude Code. Las llamadas a herramientas, las preguntas y las solicitudes de permiso aparecen en la isla y puedes responderlas ahí."
+    },
+    "Could not remove {path}: {error}": {
+      "es": "No se pudo eliminar {path}: {error}"
+    },
+    "Could not remove: {error}": {
+      "es": "No se pudo quitar: {error}"
+    },
+    "Could not save the image: {error}": {
+      "es": "No se pudo guardar la imagen: {error}"
+    },
+    "Could not save your current status line next to the relay; nothing was changed.": {
+      "es": "No se pudo guardar tu línea de estado actual junto al relé; no se cambió nada."
+    },
+    "Could not save: {error}": {
+      "es": "No se pudo guardar: {error}"
+    },
+    "Could not write: {error}": {
+      "es": "No se pudo escribir: {error}"
+    },
+    "Counts and project names only — never commands, files or prompts. Kept on this computer for 12 weeks.": {
+      "es": "Solo recuentos y nombres de proyecto — nunca comandos, archivos ni prompts. Se guarda en este equipo durante 12 semanas."
+    },
+    "Custom server": {
+      "es": "Servidor personalizado"
+    },
+    "Default branch CI": {
+      "es": "CI de la rama principal"
+    },
+    "Deployment": {
+      "es": "Despliegue"
+    },
+    "Details": {
+      "es": "Detalles"
+    },
+    "Display under the cursor": {
+      "es": "Pantalla bajo el puntero"
+    },
+    "Docs": {
+      "es": "Documentos"
+    },
+    "Done.": {
+      "es": "Listo."
+    },
+    "Done. Open a new Claude Code session to pick the hooks up.": {
+      "es": "Listo. Abre una nueva sesión de Claude Code para que cargue los hooks."
+    },
+    "Done. Previous settings saved as {backup}. Open a new Claude Code session to pick the hooks up.": {
+      "es": "Listo. La configuración anterior se guardó como {backup}. Abre una nueva sesión de Claude Code para que cargue los hooks."
+    },
+    "Done. Previous settings saved as {backup}. The numbers appear after the next reply of a Claude Code session.": {
+      "es": "Listo. La configuración anterior se guardó como {backup}. Las cifras aparecen tras la próxima respuesta de una sesión de Claude Code."
+    },
+    "Done. Previous version saved as {paths}.": {
+      "es": "Listo. La versión anterior se guardó como {paths}."
+    },
+    "Done. The numbers appear after the next reply of a Claude Code session.": {
+      "es": "Listo. Las cifras aparecen tras la próxima respuesta de una sesión de Claude Code."
+    },
+    "Drop": {
+      "es": "Soltar"
+    },
+    "Enter the server address first.": {
+      "es": "Escribe primero la dirección del servidor."
+    },
+    "Error": {
+      "es": "Error"
+    },
+    "File": {
+      "es": "Archivo"
+    },
+    "Folders can't be dropped yet.": {
+      "es": "Todavía no se pueden soltar carpetas."
+    },
+    "Friday": {
+      "es": "Viernes"
+    },
+    "From anywhere": {
+      "es": "Desde cualquier lugar"
+    },
+    "Go to pill 1 to 9": {
+      "es": "Ir a la píldora 1 a 9"
+    },
+    "Go to the waiting permission or question": {
+      "es": "Ir al permiso o la pregunta pendiente"
+    },
+    "Hide project names": {
+      "es": "Ocultar nombres de proyecto"
+    },
+    "History cleared.": {
+      "es": "Historial borrado."
+    },
+    "Hold Ctrl, Alt or the Windows key with it.": {
+      "es": "Mantén presionada Ctrl, Alt o la tecla Windows a la vez."
+    },
+    "Images": {
+      "es": "Imágenes"
+    },
+    "In the open island": {
+      "es": "En la isla abierta"
+    },
+    "In use": {
+      "es": "En uso"
+    },
+    "In use by another app": {
+      "es": "En uso por otra app"
+    },
+    "Install hooks…": {
+      "es": "Instalar hooks…"
+    },
+    "Install relay…": {
+      "es": "Instalar relé…"
+    },
+    "Install the hooks to see your Claude Code sessions in the island and approve permissions without leaving what you are doing.": {
+      "es": "Instala los hooks para ver tus sesiones de Claude Code en la isla y aprobar permisos sin dejar lo que estás haciendo."
+    },
+    "Install…": {
+      "es": "Instalar…"
+    },
+    "Instance URL": {
+      "es": "URL de la instancia"
+    },
+    "Integration lacks access": {
+      "es": "La integración no tiene acceso"
+    },
+    "Integration token": {
+      "es": "Token de integración"
+    },
+    "Invalid API key (401)": {
+      "es": "Clave de API no válida (401)"
+    },
+    "Island lives on": {
+      "es": "La isla vive en"
+    },
+    "Keep the island open": {
+      "es": "Mantener la isla abierta"
+    },
+    "Key configured": {
+      "es": "Clave configurada"
+    },
+    "Key from {site}": {
+      "es": "Clave de {site}"
+    },
+    "Key lacks access": {
+      "es": "La clave no tiene acceso"
+    },
+    "Key removed.": {
+      "es": "Clave quitada."
+    },
+    "Key saved in the {store}.": {
+      "es": "Clave guardada en {store}."
+    },
+    "Later — keep it waiting": {
+      "es": "Más tarde — que espere"
+    },
+    "Launch at startup": {
+      "es": "Abrir al iniciar sesión"
+    },
+    "Leave the user name and password out of the address.": {
+      "es": "No incluyas el usuario ni la contraseña en la dirección."
+    },
+    "Main display": {
+      "es": "Pantalla principal"
+    },
+    "Main tool": {
+      "es": "Herramienta principal"
+    },
+    "Meeting": {
+      "es": "Reunión"
+    },
+    "Monday": {
+      "es": "Lunes"
+    },
+    "Mute": {
+      "es": "Silenciar"
+    },
+    "Mute or unmute Liv": {
+      "es": "Silenciar o reactivar Liv"
+    },
+    "Send Liv to the desktop": {
+      "es": "Enviar a Liv al escritorio"
+    },
+    "Network error: {error}": {
+      "es": "Error de red: {error}"
+    },
+    "Next or previous pill": {
+      "es": "Píldora siguiente o anterior"
+    },
+    "Next pill": {
+      "es": "Siguiente píldora"
+    },
+    "No API key — add it in Settings.": {
+      "es": "No hay clave de API — añádela en Ajustes."
+    },
+    "No Pictures or Downloads folder to save into.": {
+      "es": "No hay una carpeta Imágenes o Descargas donde guardar."
+    },
+    "No change.": {
+      "es": "Sin cambios."
+    },
+    "No connection: {error}": {
+      "es": "Sin conexión: {error}"
+    },
+    "No display server was found, so global shortcuts are off.": {
+      "es": "No se encontró ningún servidor gráfico, así que los atajos globales están desactivados."
+    },
+    "No existing file — nothing to back up.": {
+      "es": "No hay ningún archivo — nada que respaldar."
+    },
+    "No key yet — the chat needs one.": {
+      "es": "Aún no hay clave — el chat necesita una."
+    },
+    "No models yet. Download one in {name} first.": {
+      "es": "Aún no hay modelos. Descarga uno en {name} primero."
+    },
+    "No response text.": {
+      "es": "La respuesta no tiene texto."
+    },
+    "No settings.json yet — nothing to back up.": {
+      "es": "Aún no hay settings.json — nada que respaldar."
+    },
+    "No telemetry. Network requests only go to the services you configure yourself.": {
+      "es": "Sin telemetría. Las solicitudes de red solo van a los servicios que configuras tú."
+    },
+    "Not a valid address: {address}": {
+      "es": "Dirección no válida: {address}"
+    },
+    "Not a valid http:// or https:// address.": {
+      "es": "No es una dirección http:// o https:// válida."
+    },
+    "Not a valid shortcut": {
+      "es": "No es un atajo válido"
+    },
+    "Not available": {
+      "es": "No disponible"
+    },
+    "Nothing leaves your PC: the server runs on this computer.": {
+      "es": "Nada sale de tu equipo: el servidor funciona en él."
+    },
+    "Only files dropped on the island can be added.": {
+      "es": "Solo se pueden añadir archivos soltados en la isla."
+    },
+    "Open in VS Code": {
+      "es": "Abrir en VS Code"
+    },
+    "Open or close the island": {
+      "es": "Abrir o cerrar la isla"
+    },
+    "Open the chat": {
+      "es": "Abrir el chat"
+    },
+    "Open the terminal": {
+      "es": "Abrir la terminal"
+    },
+    "OpenAI-compatible": {
+      "es": "Compatible con OpenAI"
+    },
+    "OpenAI-compatible server": {
+      "es": "Servidor compatible con OpenAI"
+    },
+    "PDF": {
+      "es": "PDF"
+    },
+    "Payment": {
+      "es": "Pago"
+    },
+    "Personal access token with read_api and read_user scopes.": {
+      "es": "Token de acceso personal con los alcances read_api y read_user."
+    },
+    "Pick a model above the chat box first.": {
+      "es": "Elige primero un modelo encima del cuadro de chat."
+    },
+    "Pick a {name} model above the chat box.": {
+      "es": "Elige un modelo de {name} encima del cuadro de chat."
+    },
+    "Pick up to {max} pills to show next to Liv — {used}/{max} in use. Keys are stored in the {store}, never on disk.": {
+      "es": "Elige hasta {max} píldoras para mostrar junto a Liv — {used}/{max} en uso. Las claves se guardan en {store}, nunca en el disco."
+    },
+    "Press keys…": {
+      "es": "Presiona las teclas…"
+    },
+    "Previous pill": {
+      "es": "Píldora anterior"
+    },
+    "Questions": {
+      "es": "Preguntas"
+    },
+    "Reinstall hooks…": {
+      "es": "Reinstalar hooks…"
+    },
+    "Reinstall…": {
+      "es": "Reinstalar…"
+    },
+    "Relay": {
+      "es": "Relé"
+    },
+    "Repositories": {
+      "es": "Repositorios"
+    },
+    "Reset to defaults": {
+      "es": "Restablecer valores predeterminados"
+    },
+    "Resets": {
+      "es": "Reinicios"
+    },
+    "Restart Amp to load the plugin.": {
+      "es": "Reinicia Amp para cargar el plugin."
+    },
+    "Restart Cursor to pick the hooks up.": {
+      "es": "Reinicia Cursor para que cargue los hooks."
+    },
+    "Restart OpenCode to load the plugin.": {
+      "es": "Reinicia OpenCode para cargar el plugin."
+    },
+    "Saturday": {
+      "es": "Sábado"
+    },
+    "Save image": {
+      "es": "Guardar imagen"
+    },
+    "Save key": {
+      "es": "Guardar clave"
+    },
+    "Saved as {name}": {
+      "es": "Guardada como {name}"
+    },
+    "Saved. It never touches disk.": {
+      "es": "Guardada. Nunca toca el disco."
+    },
+    "Saving…": {
+      "es": "Guardando…"
+    },
+    "Secret key": {
+      "es": "Clave secreta"
+    },
+    "Send the message": {
+      "es": "Enviar el mensaje"
+    },
+    "Sessions — approvals stay in the agent": {
+      "es": "Sesiones — las aprobaciones se quedan en el agente"
+    },
+    "Sessions, and Allow / Deny from the island": {
+      "es": "Sesiones, y Permitir / Denegar desde la isla"
+    },
+    "Share your week": {
+      "es": "Comparte tu semana"
+    },
+    "Show in folder": {
+      "es": "Mostrar en la carpeta"
+    },
+    "Show other coding agents in the island. Liv adds its entries to each agent's own config: you see the exact change and where the backup goes before anything is written, and uninstalling removes only what Liv added.": {
+      "es": "Muestra otros agentes de programación en la isla. Liv añade sus entradas a la configuración de cada agente: ves el cambio exacto y dónde va la copia de seguridad antes de que se escriba nada, y al desinstalar solo se quita lo que añadió Liv."
+    },
+    "Shows your Claude plan usage (5-hour and weekly limits) in the island's header. Liv adds a status line relay in ~/.claude/settings.json. If you already have a status line, it keeps working as before. Pro and Max plans only.": {
+      "es": "Muestra el uso de tu plan de Claude (límites de 5 horas y semanal) en la cabecera de la isla. Liv añade un relé de línea de estado en ~/.claude/settings.json. Si ya tienes una línea de estado, sigue funcionando como antes. Solo planes Pro y Max."
+    },
+    "Shows your Codex plan usage (weekly limit and free resets left) in the island's header. Liv asks the Codex CLI (codex app-server) when the pill shows; nothing is installed. Codex must be signed in with ChatGPT.": {
+      "es": "Muestra el uso de tu plan de Codex (límite semanal y reinicios gratuitos restantes) en la cabecera de la isla. Liv consulta a la CLI de Codex (codex app-server) cuando aparece la píldora; no se instala nada. Codex debe tener la sesión iniciada con ChatGPT."
+    },
+    "Start a new Antigravity conversation to pick the hooks up.": {
+      "es": "Abre una nueva conversación de Antigravity para que cargue los hooks."
+    },
+    "Start a new Copilot CLI session to pick the hooks up.": {
+      "es": "Abre una nueva sesión de Copilot CLI para que cargue los hooks."
+    },
+    "Start a new Gemini CLI session to pick the hooks up.": {
+      "es": "Abre una nueva sesión de Gemini CLI para que cargue los hooks."
+    },
+    "Start a new Muse Code session to pick the hooks up.": {
+      "es": "Abre una nueva sesión de Muse Code para que cargue los hooks."
+    },
+    "Start a new chat": {
+      "es": "Empezar un chat nuevo"
+    },
+    "Sunday": {
+      "es": "Domingo"
+    },
+    "Switch provider or model": {
+      "es": "Cambiar de proveedor o modelo"
+    },
+    "That key can't be used in a shortcut.": {
+      "es": "Esa tecla no se puede usar en un atajo."
+    },
+    "The address must start with http:// or https://.": {
+      "es": "La dirección debe empezar por http:// o https://."
+    },
+    "The file is removed.": {
+      "es": "El archivo se elimina."
+    },
+    "The image could not be read.": {
+      "es": "No se pudo leer la imagen."
+    },
+    "The image is too large.": {
+      "es": "La imagen es demasiado grande."
+    },
+    "The preview is out of date. Nothing was written — review the new diff.": {
+      "es": "La vista previa está desactualizada. No se escribió nada — revisa el nuevo diff."
+    },
+    "The relay isn't installed yet.": {
+      "es": "El relé aún no está instalado."
+    },
+    "The relay isn't installed yet. Restart Liv.": {
+      "es": "El relé aún no está instalado. Reinicia Liv."
+    },
+    "The server refused the key. Check it, then connect again.": {
+      "es": "El servidor rechazó la clave. Revísala y vuelve a conectar."
+    },
+    "The server's answer is too large.": {
+      "es": "La respuesta del servidor es demasiado grande."
+    },
+    "This address is another machine, over plain http: what you ask travels unencrypted.": {
+      "es": "Esta dirección es otra máquina, por http sin cifrar: lo que preguntas viaja sin cifrado."
+    },
+    "This address is another machine: what you ask is sent to it.": {
+      "es": "Esta dirección es otra máquina: lo que preguntas se le envía."
+    },
+    "This agent takes a plugin, not hook entries.": {
+      "es": "Este agente usa un plugin, no entradas de hooks."
+    },
+    "This is exactly what changes for {name}. Nothing else is touched.": {
+      "es": "Esto es exactamente lo que cambia para {name}. No se toca nada más."
+    },
+    "This is exactly what will change in your settings.json. Your own hooks are left untouched.": {
+      "es": "Esto es exactamente lo que cambiará en tu settings.json. Tus propios hooks no se tocan."
+    },
+    "This is exactly what will change: only the status line. If you already have one it keeps working, Liv's relay runs it for you.": {
+      "es": "Esto es exactamente lo que cambiará: solo la línea de estado. Si ya tienes una, sigue funcionando: el relé de Liv la ejecuta por ti."
+    },
+    "This puts your previous status line back, or removes the entry if there was none.": {
+      "es": "Esto devuelve tu línea de estado anterior, o quita la entrada si no había ninguna."
+    },
+    "This removes Liv's entries only. Everything else stays.": {
+      "es": "Esto solo quita las entradas de Liv. Todo lo demás se queda."
+    },
+    "This removes Liv's entries only. Your own hooks are left untouched.": {
+      "es": "Esto solo quita las entradas de Liv. Tus propios hooks no se tocan."
+    },
+    "Thursday": {
+      "es": "Jueves"
+    },
+    "Token lacks access": {
+      "es": "El token no tiene acceso"
+    },
+    "Token lacks the needed scope": {
+      "es": "Al token le falta el alcance necesario"
+    },
+    "Total stars": {
+      "es": "Estrellas totales"
+    },
+    "Tuesday": {
+      "es": "Martes"
+    },
+    "Turn it on once with `hermes plugins enable liv`, then start a new Hermes session.": {
+      "es": "Actívalo una vez con `hermes plugins enable liv` y luego abre una nueva sesión de Hermes."
+    },
+    "Types “{char}”": {
+      "es": "Escribe «{char}»"
+    },
+    "Unexpected API response.": {
+      "es": "Respuesta inesperada de la API."
+    },
+    "Uninstall hooks…": {
+      "es": "Desinstalar hooks…"
+    },
+    "Uninstall relay…": {
+      "es": "Desinstalar relé…"
+    },
+    "Uninstall…": {
+      "es": "Desinstalar…"
+    },
+    "Unknown agent \"{id}\".": {
+      "es": "Agente desconocido «{id}»."
+    },
+    "Untitled": {
+      "es": "Sin título"
+    },
+    "Use a secret key (sk_live_… not pk_live_…)": {
+      "es": "Usa una clave secreta (sk_live_…, no pk_live_…)"
+    },
+    "Use in chat": {
+      "es": "Usar en el chat"
+    },
+    "Used twice": {
+      "es": "Usado dos veces"
+    },
+    "Warning: the key would be sent unencrypted (http://) to another machine. Use https://, or a server on this computer.": {
+      "es": "Atención: la clave se enviaría sin cifrar (http://) a otra máquina. Usa https:// o un servidor en este equipo."
+    },
+    "Wednesday": {
+      "es": "Miércoles"
+    },
+    "Work from any app. Click a shortcut to change it, then press the new keys — Esc cancels, Backspace removes it.": {
+      "es": "Funcionan desde cualquier app. Haz clic en un atajo para cambiarlo y presiona las nuevas teclas — Esc cancela, Backspace lo quita."
+    },
+    "Workflow": {
+      "es": "Flujo de trabajo"
+    },
+    "Write to {path} failed: {error}": {
+      "es": "Falló la escritura en {path}: {error}"
+    },
+    "Your Wayland desktop doesn't let apps listen for keys outside their own windows. Add the shortcuts in your system's keyboard settings instead, with these commands:": {
+      "es": "Tu escritorio Wayland no deja que las apps escuchen teclas fuera de sus propias ventanas. Añade los atajos en la configuración de teclado del sistema, con estos comandos:"
+    },
+    "Desktop: {keys}": {
+      "es": "Escritorio: {keys}"
+    },
+    "Not set by your desktop": {
+      "es": "Tu escritorio no lo activó"
+    },
+    "These shortcuts are registered with your desktop. It may ask you to confirm them or to pick other keys; when it says which keys it uses, they show next to each shortcut.": {
+      "es": "Estos atajos están registrados en tu escritorio. Puede pedirte que los confirmes o que elijas otras teclas; cuando indica qué teclas usa, aparecen junto a cada atajo."
+    },
+    "Asking your desktop to register the shortcuts. It may show its own window to confirm them.": {
+      "es": "Pidiendo a tu escritorio que registre los atajos. Puede mostrar su propia ventana para confirmarlos."
+    },
+    "If one doesn't work, you can also add it in your system's keyboard settings with these commands:": {
+      "es": "Si alguno no funciona, también puedes añadirlo en la configuración de teclado del sistema con estos comandos:"
+    },
+    "all green": {
+      "es": "todo en verde"
+    },
+    "The relay is missing: reinstall Liv.": {
+      "es": "Falta el relé: vuelve a instalar Liv."
+    },
+    "failing": {
+      "es": "con fallos"
+    },
+    "finished": {
+      "es": "terminó"
+    },
+    "installed": {
+      "es": "instalado"
+    },
+    "is asking": {
+      "es": "está preguntando"
+    },
+    "is asking ({index} of {total})": {
+      "es": "está preguntando ({index} de {total})"
+    },
+    "is asking a question": {
+      "es": "está haciendo una pregunta"
+    },
+    "lines": {
+      "es": "líneas"
+    },
+    "no repos": {
+      "es": "sin repositorios"
+    },
+    "not installed": {
+      "es": "no instalado"
+    },
+    "passing": {
+      "es": "correcto"
+    },
+    "running": {
+      "es": "en curso"
+    },
+    "seconds after you leave the island": {
+      "es": "segundos después de salir de la isla"
+    },
+    "settings.json: {what} has an unexpected type — Liv has not touched it.": {
+      "es": "settings.json: {what} tiene un tipo inesperado — Liv no lo ha tocado."
+    },
+    "unknown": {
+      "es": "desconocido"
+    },
+    "{allowed} allowed, {denied} denied": {
+      "es": "{allowed} permitidos, {denied} denegados"
+    },
+    "{count} contributions": {
+      "es": {
+        "one": "{count} contribución",
+        "other": "{count} contribuciones"
+      }
+    },
+    "{count} models": {
+      "es": {
+        "one": "{count} modelo",
+        "other": "{count} modelos"
+      }
+    },
+    "{count} repos": {
+      "es": {
+        "one": "{count} repositorio",
+        "other": "{count} repositorios"
+      }
+    },
+    "{file} isn't UTF-8 text — Liv won't touch it.": {
+      "es": "{file} no es texto UTF-8 — Liv no lo tocará."
+    },
+    "{file} isn't a JSON object — Liv won't touch it.": {
+      "es": "{file} no es un objeto JSON — Liv no lo tocará."
+    },
+    "{file} isn't valid JSON ({error}). Fix or move it, then try again — Liv won't overwrite it.": {
+      "es": "{file} no es un JSON válido ({error}). Corrígelo o muévelo y vuelve a intentarlo — Liv no lo sobrescribirá."
+    },
+    "{h}h {m}m": {
+      "es": "{h} h {m} min"
+    },
+    "{keys} types “{char}” on your keyboard, so it can't be a shortcut. Pick another key.": {
+      "es": "{keys} escribe «{char}» en tu teclado, así que no puede ser un atajo. Elige otra tecla."
+    },
+    "{model} isn't installed. Pick another model above the chat box.": {
+      "es": "{model} no está instalado. Elige otro modelo encima del cuadro de chat."
+    },
+    "{name} API key missing. Add it in Settings.": {
+      "es": "Falta la clave de API de {name}. Añádela en Ajustes."
+    },
+    "{name} rate limit reached (429): {detail}": {
+      "es": "{name}: se alcanzó el límite de solicitudes (429): {detail}"
+    },
+    "{name} rejected the API key ({status}). Check it in Settings.": {
+      "es": "{name} rechazó la clave de API ({status}). Revísala en Ajustes."
+    },
+    "{name} wasn't written by Liv — Liv has not touched it.": {
+      "es": "{name} no lo escribió Liv — Liv no lo ha tocado."
+    },
+    "{name} — {width}×{height} at {x},{y}": {
+      "es": "{name} — {width}×{height} en {x},{y}"
+    },
+    "{name}: model not found (404). Pick another one above the chat box. {detail}": {
+      "es": "{name}: modelo no encontrado (404). Elige otro encima del cuadro de chat. {detail}"
+    },
+    "{name}: not enough credits (402). {detail}": {
+      "es": "{name}: no hay créditos suficientes (402). {detail}"
+    },
+    "{n} available": {
+      "es": "{n} disponibles"
+    },
+    "{n}d": {
+      "es": "{n} d"
+    },
+    "{n}h": {
+      "es": "{n} h"
+    },
+    "{n}m": {
+      "es": "{n} min"
+    },
+    "{path} changed since the preview. Nothing was written — review the new diff.": {
+      "es": "{path} cambió desde la vista previa. No se escribió nada — revisa el nuevo diff."
+    },
+    "{path} is too long for Liv to show what would change ({lines} lines). Nothing was written.": {
+      "es": "{path} es demasiado largo para que Liv te muestre qué cambiaría ({lines} líneas). No se escribió nada."
+    },
+    "{time} ago": {
+      "es": "hace {time}"
+    },
+    "{total} past year": {
+      "es": "{total} el último año"
+    },
+    "{used}/{max} slots in use — the main tool doesn't take one.": {
+      "es": "{used}/{max} espacios en uso — la herramienta principal no ocupa ninguno."
+    },
+    "{what} has an unexpected type — Liv has not touched it.": {
+      "es": "{what} tiene un tipo inesperado — Liv no lo ha tocado."
+    },
+    "• subagent done": {
+      "es": "• subagente terminado"
+    },
+    "⚠ failed": {
+      "es": "⚠ falló"
+    },
+    "A key is only sent over https, or to a server on this computer.": {
+      "es": "La clave solo se envía por https o a un servidor de este equipo."
+    },
+    "Only a file dropped on the island can be sent with a question.": {
+      "es": "Solo se puede enviar con una pregunta un archivo soltado en la isla."
+    },
+    "The numbers come from the Claude Code command-line tool. The Claude desktop app does not report them, so the gauge stays empty if you only use the desktop app.": {
+      "es": "Los datos vienen de la herramienta de línea de comandos de Claude Code. La app de escritorio de Claude no los envía, así que el indicador queda vacío si solo usas la app de escritorio."
+    },
+    "How the island looks and behaves.": {
+      "es": "Cómo se ve y se comporta la isla."
+    },
+    "The pills shown in the island and their colours.": {
+      "es": "Las píldoras que muestra la isla y sus colores."
+    },
+    "The AI of the island's chat, with your own keys.": {
+      "es": "La IA del chat de la isla, con tus propias claves."
+    },
+    "The keys that open the island and its actions.": {
+      "es": "Las teclas que abren la isla y sus acciones."
+    },
+    "Show clock in the island": {
+      "es": "Mostrar el reloj en la isla"
+    },
+    "The date and the time in the middle of the island when it is compact.": {
+      "es": "La fecha y la hora en el centro de la isla cuando está compacta."
+    },
+    "Get new versions from the island?": {
+      "es": "¿Recibir las nuevas versiones en la isla?"
+    },
+    "Liv checks its releases on GitHub a few times a day and tells you when one is out. Nothing about you is sent.": {
+      "es": "Liv revisa sus versiones en GitHub varias veces al día y te avisa cuando sale una. No se envía nada sobre ti."
+    },
+    "Liv {version} is out": {
+      "es": "Ya salió Liv {version}"
+    },
+    "You have {version}": {
+      "es": "Tienes la {version}"
+    },
+    "What's new": {
+      "es": "Novedades"
+    },
+    "Downloading from GitHub… {percent} %": {
+      "es": "Descargando desde GitHub… {percent} %"
+    },
+    "Installing… Liv closes and comes back by itself.": {
+      "es": "Instalando… Liv se cierra y vuelve a abrirse solo."
+    },
+    "The update didn't go through": {
+      "es": "La actualización no se completó"
+    },
+    "Install {version}": {
+      "es": "Instalar la {version}"
+    },
+    "Get {version} on GitHub": {
+      "es": "Descargar la {version} en GitHub"
+    },
+    "Couldn't reach GitHub": {
+      "es": "No se pudo contactar con GitHub"
+    },
+    "Liv looks at its own releases on GitHub a few times a day. An update is installed only after your click, once its SHA-256 matches the one GitHub publishes.": {
+      "es": "Liv revisa sus propias versiones en GitHub varias veces al día. Una actualización solo se instala después de tu clic, una vez que su SHA-256 coincide con el que publica GitHub."
+    },
+    "Liv looks at its own releases on GitHub a few times a day and tells you when one is out. Update it the way you installed it: AppImage, .deb, .rpm or your package manager.": {
+      "es": "Liv revisa sus propias versiones en GitHub varias veces al día y te avisa cuando sale una. Actualízalo como lo instalaste: AppImage, .deb, .rpm o tu gestor de paquetes."
+    },
+    "The download failed. Try again, or get the new version on GitHub.": {
+      "es": "La descarga falló. Inténtalo de nuevo o descarga la nueva versión en GitHub."
+    },
+    "GitHub gave no checksum for this download, so nothing was installed.": {
+      "es": "GitHub no dio ninguna suma de verificación para esta descarga, así que no se instaló nada."
+    },
+    "The download isn't the file GitHub published for this version, so nothing was installed.": {
+      "es": "La descarga no es el archivo que GitHub publicó para esta versión, así que no se instaló nada."
+    },
+    "Windows blocked the installer. Get the new version from its release page instead.": {
+      "es": "Windows bloqueó el instalador. Descarga la nueva versión desde su página de lanzamiento."
+    },
+    "Update Liv to {version}…": {
+      "es": "Actualizar Liv a la {version}…"
+    },
+    "You're on Liv {version}": {
+      "es": "Ya tienes Liv {version}"
+    },
+    "agent session": {
+      "es": "sesión de agente"
+    },
+    "agent sessions": {
+      "es": "sesiones de agentes"
+    },
+    "with your agents": {
+      "es": "con tus agentes"
+    },
+    "lines written": {
+      "es": "líneas escritas"
+    },
+    "approval from the island": {
+      "es": "aprobación desde la isla"
+    },
+    "approvals from the island": {
+      "es": "aprobaciones desde la isla"
+    },
+    "Claude Code is not installed.": {
+      "es": "Claude Code no está instalado."
+    },
+    "Could not start Claude Code: {error}": {
+      "es": "No se pudo iniciar Claude Code: {error}"
+    },
+    "Claude Code took too long to answer.": {
+      "es": "Claude Code tardó demasiado en responder."
+    },
+    "Claude Code gave no answer.": {
+      "es": "Claude Code no dio ninguna respuesta."
+    },
+    "Claude Code could not answer.": {
+      "es": "Claude Code no pudo responder."
+    },
+    "Not signed in yet? Run this once in a terminal: {command}": {
+      "es": "¿Aún no has iniciado sesión? Ejecuta una vez en una terminal: {command}"
+    },
+    "{tool} is not installed. Install it from Settings → Chat, sign in once in a terminal, then ask again.": {
+      "es": "{tool} no está instalado. Instálalo desde Ajustes → Chat, inicia sesión una vez en una terminal y vuelve a preguntar."
+    },
+    "Could not start {tool}: {error}": {
+      "es": "No se pudo iniciar {tool}: {error}"
+    },
+    "{tool} took too long to answer.": {
+      "es": "{tool} tardó demasiado en responder."
+    },
+    "{tool} is not signed in. Sign in once in a terminal: {command}": {
+      "es": "{tool} no ha iniciado sesión. Inicia sesión una vez en una terminal: {command}"
+    },
+    "{tool} gave no answer.": {
+      "es": "{tool} no respondió."
+    },
+    "{tool} could not answer.": {
+      "es": "{tool} no pudo responder."
+    },
+    "No key: the chat can go through your Claude subscription above.": {
+      "es": "Sin clave: el chat puede usar tu suscripción de Claude de arriba."
+    },
+    "Show in compact island": {
+      "es": "Mostrar en la isla compacta"
+    },
+    "Once closed, a small island stays at the top of the screen. Hover it to bring Liv back. If hidden, move the pointer to the middle of the top edge of the screen.": {
+      "es": "Al cerrarse, una isla pequeña se queda arriba de la pantalla. Pasa el puntero por encima para recuperar Liv. Si está oculta, lleva el puntero al centro del borde superior de la pantalla."
+    },
+    "Claude usage": {
+      "es": "Uso de Claude"
+    },
+    "Closed island shows": {
+      "es": "La isla cerrada muestra"
+    },
+    "Hide the island": {
+      "es": "Ocultar la isla"
+    },
+    "Liv": {
+      "es": "Liv"
+    },
+    "Nothing, just the island": {
+      "es": "Nada, solo la isla"
+    },
+    "The date and the time": {
+      "es": "La fecha y la hora"
+    },
+    "The time": {
+      "es": "La hora"
+    },
+    "What's playing": {
+      "es": "Lo que suena"
+    },
+    "Copied: paste it into the session's terminal.": {
+      "es": "Copiado: pégalo en la terminal de la sesión."
+    },
+    "Island size": {
+      "es": "Tamaño de la isla"
+    },
+    "Makes the island and its text bigger.": {
+      "es": "Hace más grandes la isla y su texto."
+    },
+    "This screen only fits {size}.": {
+      "es": "En esta pantalla solo cabe {size}."
+    },
+    "Hide when an app is full screen": {
+      "es": "Ocultar cuando una app está en pantalla completa"
+    },
+    "Liv on the desktop": {
+      "es": "Liv en el escritorio"
+    },
+    "Drag Liv out of the island, or press {keys}. Double-click brings it home.": {
+      "es": "Arrastra a Liv fuera de la isla o presiona {keys}. Con doble clic vuelve a casa."
+    },
+    "Drag Liv out of the island. Double-click brings it home.": {
+      "es": "Arrastra a Liv fuera de la isla. Con doble clic vuelve a casa."
+    },
+    "For films, games and presentations: the island comes back when you leave full screen.": {
+      "es": "Para películas, juegos y presentaciones: la isla vuelve al salir de pantalla completa."
+    },
+    "Office": {
+      "es": "Oficina"
+    },
+    "{count} agents": {
+      "es": {
+        "one": "{count} agente",
+        "other": "{count} agentes"
+      }
+    },
+    "{count} waiting for you": {
+      "es": {
+        "one": "{count} pendiente de ti",
+        "other": "{count} pendientes de ti"
+      }
+    },
+    "No news from the office yet.": {
+      "es": "Aún no hay novedades de la oficina."
+    },
+    "Review": {
+      "es": "Revisar"
+    },
+    "Open office": {
+      "es": "Abrir oficina"
+    },
+    "Set its address in Settings.": {
+      "es": "Pon su dirección en Ajustes."
+    },
+    "no task": {
+      "es": "sin tarea"
+    },
+    "at work": {
+      "es": "trabajando"
+    },
+    "waiting on you": {
+      "es": "esperando tu respuesta"
+    },
+    "held up": {
+      "es": "bloqueado"
+    },
+    "failed": {
+      "es": "falló"
+    },
+    "task done": {
+      "es": "terminó su tarea"
+    },
+    "no longer there": {
+      "es": "ya no está"
+    },
+    "no signal": {
+      "es": "sin señal"
+    },
+    "Virtual office": {
+      "es": "Oficina virtual"
+    },
+    "A team of AI agents you run in another program can show here who is working, what waits for you, errors and milestones. Liv only listens and takes you there.": {
+      "es": "Un equipo de agentes de IA que llevas en otro programa puede enseñar aquí quién trabaja, qué necesita tu respuesta, los errores y los hitos. Liv solo escucha y te lleva allí."
+    },
+    "Show my virtual office": {
+      "es": "Mostrar mi oficina virtual"
+    },
+    "Its pill appears on its own with the office's first event. Off, its events are ignored.": {
+      "es": "Su píldora aparece sola con el primer evento de la oficina. Desactivado, sus eventos se ignoran."
+    },
+    "Office address": {
+      "es": "Dirección de la oficina"
+    },
+    "What the Open office button opens, unless the office names an address itself. To keep the pill as a shortcut, turn on Office in the list above.": {
+      "es": "Lo que abre el botón Abrir oficina, salvo que la oficina indique una dirección. Para tener la píldora como acceso directo, activa Oficina en la lista de arriba."
+    },
+    "Send events with": {
+      "es": "Enviar eventos con"
+    },
+    "Copy example": {
+      "es": "Copiar ejemplo"
+    },
+    "One JSON event on standard input. The format is described in docs/OFICINA.md, in Liv's repository.": {
+      "es": "Un evento JSON por la entrada estándar. El formato está descrito en docs/OFICINA.md, en el repositorio de Liv."
+    },
+    "My MRs": {
+      "es": "Mis MR"
+    },
+    "Resume": {
+      "es": "Reanudar"
+    },
+    "Open this window when Liv starts": {
+      "es": "Abrir esta ventana al abrir Liv"
+    },
+    "Not when Liv starts with the computer.": {
+      "es": "No cuando Liv arranca con el equipo."
+    },
+    "Windows Credential Manager": {
+      "es": "el Administrador de credenciales de Windows"
+    },
+    "Secret Service (GNOME Keyring, KWallet)": {
+      "es": "el servicio de secretos del sistema (GNOME Keyring, KWallet)"
+    },
+    "Add pills…": {
+      "es": "Añadir píldoras…"
+    },
+    "Wardrobe": {
+      "es": "Vestuario"
+    },
+    "Wardrobe…": {
+      "es": "Vestuario…"
+    },
+    "Open the wardrobe": {
+      "es": "Abrir el vestuario"
+    },
+    "Liv wears": {
+      "es": "Liv lleva"
+    },
+    "Auto": {
+      "es": "Auto"
+    },
+    "Nothing": {
+      "es": "Nada"
+    },
+    "Glasses": {
+      "es": "Gafas"
+    },
+    "Scarf": {
+      "es": "Bufanda"
+    },
+    "Headphones": {
+      "es": "Auriculares"
+    },
+    "Beanie": {
+      "es": "Gorro"
+    },
+    "Star": {
+      "es": "Estrella"
+    },
+    "Auto: today Liv wears the glasses.": {
+      "es": "Auto: hoy Liv lleva las gafas."
+    },
+    "Auto: today Liv wears the scarf.": {
+      "es": "Auto: hoy Liv lleva la bufanda."
+    },
+    "Auto: today Liv wears the headphones.": {
+      "es": "Auto: hoy Liv lleva los auriculares."
+    },
+    "Auto: today Liv wears the beanie.": {
+      "es": "Auto: hoy Liv lleva el gorro."
+    },
+    "Auto: today Liv wears the star.": {
+      "es": "Auto: hoy Liv lleva la estrella."
+    },
+    "Auto: today Liv wears nothing.": {
+      "es": "Auto: hoy Liv no lleva nada."
+    },
+    "With the island folded, only the star fits.": {
+      "es": "Con la isla plegada, solo cabe la estrella."
+    },
+    "Auto follows the season. Right-click Liv to try things on; with the island folded, only the star fits.": {
+      "es": "Auto sigue la estación. Haz clic derecho en Liv para probarle cosas; con la isla plegada, solo cabe la estrella."
+    },
+    "Tools": {
+      "es": "Herramientas"
+    },
+    "Open the tools": {
+      "es": "Abrir las herramientas"
+    },
+    "Clipboard": {
+      "es": "Portapapeles"
+    },
+    "Clear": {
+      "es": "Vaciar"
+    },
+    "Pasted": {
+      "es": "Pegado"
+    },
+    "Couldn’t copy": {
+      "es": "No se pudo copiar"
+    },
+    "Nothing copied yet": {
+      "es": "Aún no has copiado nada"
+    },
+    "Clipboard history is off": {
+      "es": "El historial del portapapeles está desactivado"
+    },
+    "now": {
+      "es": "ahora"
+    },
+    "Shelf": {
+      "es": "Repisa"
+    },
+    "Clipboard history": {
+      "es": "Historial del portapapeles"
+    },
+    "What you copy is listed in the island's Tools view: press {keys}, then click an entry to paste it where you were typing.": {
+      "es": "Lo que copias aparece en la vista Herramientas de la isla: pulsa {keys} y haz clic en una entrada para pegarla donde estabas escribiendo."
+    },
+    "What you copy is listed in the island's Tools view: click an entry to paste it where you were typing.": {
+      "es": "Lo que copias aparece en la vista Herramientas de la isla: haz clic en una entrada para pegarla donde estabas escribiendo."
+    },
+    "Kept in memory only, never on disk, and forgotten when Liv quits. Copies that a password manager marks as private are skipped.": {
+      "es": "Solo se guarda en memoria, nunca en disco, y se olvida al cerrar Liv. Las copias que un gestor de contraseñas marca como privadas se omiten."
+    },
+    "Drop files here": {
+      "es": "Suelta archivos aquí"
+    },
+    "Missing": {
+      "es": "No encontrado"
+    },
+    "Folder": {
+      "es": "Carpeta"
+    },
+    "Capture an area": {
+      "es": "Capturar un área"
+    },
+    "Capture the screen": {
+      "es": "Capturar la pantalla"
+    },
+    "Couldn’t take the screenshot": {
+      "es": "No se pudo hacer la captura"
+    },
+    "Screenshot": {
+      "es": "Captura"
+    },
+    "Screenshots": {
+      "es": "Capturas"
+    },
+    "Open screenshots folder": {
+      "es": "Abrir la carpeta de capturas"
+    },
+    "Screenshots are saved as PNG in the Liv folder inside Pictures. Each one is also copied to the clipboard and put on the shelf.": {
+      "es": "Las capturas se guardan como PNG en la carpeta Liv, dentro de Imágenes. Cada una también se copia al portapapeles y se pone en la repisa."
+    },
+    "AI": {
+      "es": "IA"
+    },
+    "Appearance": {
+      "es": "Apariencia"
+    },
+    "Island size, in General, makes the whole island bigger. These change the shape of the open island.": {
+      "es": "«Tamaño de la isla», en General, agranda toda la isla. Estos ajustes cambian la forma de la isla abierta."
+    },
+    "Width": {
+      "es": "Ancho"
+    },
+    "Extra height": {
+      "es": "Alto adicional"
+    },
+    "Corner rounding": {
+      "es": "Redondeo de las esquinas"
+    },
+    "Opacity": {
+      "es": "Opacidad"
+    },
+    "Reset": {
+      "es": "Restablecer"
+    }
+  }
+}

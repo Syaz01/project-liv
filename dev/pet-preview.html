@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Liv — desktop preview</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; font: 12px system-ui, "Segoe UI", sans-serif; color: #d9dbe0; }
+      body { background: linear-gradient(160deg, #2f4257, #53687a 55%, #8a8f7e); user-select: none; }
+      #bar {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; flex-wrap: wrap; gap: 6px 14px;
+        align-items: center; padding: 8px 12px; background: rgba(18, 20, 24, 0.92);
+      }
+      #bar button { font: inherit; }
+      #bar .group { display: flex; gap: 4px; align-items: center; }
+      #bar .hint { color: #8e939c; }
+      #status { margin-left: auto; font-variant-numeric: tabular-nums; }
+      #island {
+        position: fixed; left: 50%; top: 0; width: 288px; height: 32px; margin-left: -144px;
+        background: #000; border-radius: 0 0 14px 14px; z-index: 1;
+      }
+      #through {
+        position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); padding: 6px 12px; border-radius: 8px;
+        background: rgba(0, 0, 0, 0.55); opacity: 0; transition: opacity 0.2s;
+      }
+      #window { position: fixed; left: 0; top: 0; z-index: 2; pointer-events: none; }
+      #window.outlined { outline: 1px dashed rgba(255, 255, 255, 0.55); }
+      #pet { position: absolute; left: 0; top: 0; touch-action: none; }
+      #silhouette { position: absolute; left: 0; top: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Liv on the desktop in a plain browser: the real page of its window
+      (src/pet/main.ts) inside a stand-in for the window, on a stand-in for
+      the desktop, with a stand-in for Rust (dev/pet-preview.ts). `npx vite`,
+      then open /dev/pet-preview.html. Not shipped in the app.
+
+      The dashed box is the window (102 × 109 px): everything in it but Liv's
+      silhouette lets clicks through, as in the app — "a click went through"
+      shows on the desktop when one does. "Silhouette" draws the five discs
+      that take the mouse.
+
+      With the mouse, as in the app:
+        click Liv's head            it is annoyed; three clicks a little apart make it dizzy
+        rest on its head for 2 s    hearts
+        drag it                     it hangs from the pointer, and lands where it is dropped
+        double click                it flies home (the black shape at the top), and its window is put away
+        right-click                 its wardrobe (in the app the island opens on it; here a note says so)
+        come near, go away          its eyes follow, it hovers; four seconds after you leave it is a still picture
+
+      With the buttons:
+        the states                  what the island would tell it (a pill's state)
+        Wears                       what the wardrobe has it wear: the one in place goes, the next pops on
+        Finished / Error            a task ending while it is out: it celebrates or shakes where it stands
+        Greeting                    the launch greeting, at its spot
+        Update                      the update's blue shell and arrow
+        Send out / Call home        the way between the island and its spot (the window moves along src/pet/travel.ts)
+        Sleep now                   skips the two quiet minutes: eyes shut, antenna off; come near, or change its state, to wake it
+        Parked                      the window off-screen (a full-screen app, or Pause): nothing runs
+
+      On the right: frames painted in the last second (0 when nothing moves),
+      whether it is asleep (what the window told Rust), and whether the
+      window takes the mouse.
+
+      From the console: __emit("pet-look", { state: "approval", shell: null, hint: null, outfit: "scarf", beat: 0, hello: 0 }),
+      __emit("pet-shown", false), and __pet is the page's own object.
+    -->
+    <div id="island"></div>
+    <div id="through">a click went through to the desktop</div>
+    <div id="window" class="outlined">
+      <canvas id="pet"></canvas>
+      <canvas id="silhouette"></canvas>
+    </div>
+    <div id="bar"></div>
+    <script type="module" src="./pet-preview.ts"></script>
+  </body>
+</html>

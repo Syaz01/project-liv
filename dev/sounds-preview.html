@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Liv — sounds preview</title>
+    <!--
+      Liv's sounds, one button each, to hear them outside the app (`npm run dev`,
+      then /dev/sounds-preview.html). They are the files in resources/sounds,
+      made by `npm run sounds` from scripts/sounds/recipes.mjs: change a recipe,
+      run it again, reload this page. Not shipped.
+    -->
+    <style>
+      body { margin: 0; padding: 28px; background: #101114; color: #f5f6f8; font: 14px system-ui, "Segoe UI", sans-serif; }
+      h1 { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+      p { margin: 0 0 18px; color: #9398a1; }
+      #list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+      button { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; text-align: left; color: inherit;
+        background: #1a1c20; border: 1px solid #2a2d33; border-radius: 10px; font: inherit; cursor: pointer; }
+      button:hover { background: #22252b; }
+      button b { font-weight: 600; }
+      button span { color: #9398a1; font-size: 12px; }
+      button.bad { border-color: #f4505e; }
+      label { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; color: #9398a1; }
+    </style>
+  </head>
+  <body>
+    <h1>Los sonidos de Liv</h1>
+    <p>Haz clic para oír cada uno. En la app suenan mucho más bajo (volumen 0,12 de 1).</p>
+    <label><input type="checkbox" id="quiet" checked /> Al volumen de la app</label>
+    <div id="list"></div>
+    <script type="module">
+      const WHEN = {
+        peek: "La isla se asoma",
+        open: "La isla se abre",
+        close: "La isla se pliega",
+        blip: "Un clic en algo",
+        tick: "Moverse entre opciones",
+        pop: "Elegir una IA en el chat",
+        send: "Enviar un mensaje",
+        work: "Un agente se pone a trabajar",
+        finish: "Una tarea termina bien",
+        error: "Algo falla",
+        approval: "Un permiso espera tu respuesta",
+        question: "Una pregunta para ti",
+        approve: "Dijiste que sí",
+        rate: "Límite de uso alcanzado",
+      };
+      const ctx = new AudioContext();
+      const gain = ctx.createGain();
+      gain.connect(ctx.destination);
+      const quiet = document.getElementById("quiet");
+      const setGain = () => (gain.gain.value = quiet.checked ? 0.12 : 0.6);
+      quiet.addEventListener("change", setGain);
+      setGain();
+
+      const list = document.getElementById("list");
+      window.__sounds = {};
+      for (const [name, when] of Object.entries(WHEN)) {
+        const button = document.createElement("button");
+        const title = document.createElement("b");
+        title.textContent = name;
+        const note = document.createElement("span");
+        note.textContent = when;
+        button.append(title, note);
+        list.append(button);
+        try {
+          const response = await fetch(`/sounds/${name}.wav`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const buffer = await ctx.decodeAudioData(await response.arrayBuffer());
+          window.__sounds[name] = { seconds: buffer.duration, rate: buffer.sampleRate, channels: buffer.numberOfChannels };
+          note.textContent = `${when} · ${buffer.duration.toFixed(2)} s`;
+          button.addEventListener("click", () => {
+            void ctx.resume();
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(gain);
+            source.start();
+          });
+        } catch (error) {
+          window.__sounds[name] = { error: String(error) };
+          button.classList.add("bad");
+          note.textContent = `${when} · no se pudo cargar`;
+        }
+      }
+    </script>
+  </body>
+</html>

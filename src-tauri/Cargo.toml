@@ -1,0 +1,96 @@
+[package]
+name = "liv"
+description = "Liv — a Dynamic Island for Windows"
+authors = ["Liv contributors"]
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "liv_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-global-shortcut = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+tokio = { version = "1", features = ["net", "io-util", "sync", "time", "rt", "macros", "process"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+ring = "0.17"
+# The chat reads the text of a dropped PDF for the providers that take no PDF themselves
+# (openai_compat.rs); Windows has no PDF library of its own. MIT, pure Rust, default features
+# (clock, rayon) off.
+lopdf = { version = "0.46", default-features = false }
+# The clipboard history shows a copied image as a small PNG (clipboard.rs). Already in the tree
+# (tray-icon, muda), so nothing new is downloaded. MIT/Apache-2.0.
+png = "0.18.1"
+
+[target.'cfg(windows)'.dependencies]
+keyring = { version = "3", features = ["windows-native"] }
+# The island's file drop reads paths straight from WebView2 (webview_drop.rs).
+# Same versions as wry, so nothing new is compiled.
+webview2-com = "0.39"
+wv2_core = { package = "windows-core", version = "0.62" }
+windows = { version = "0.61", features = [
+  # The Spotify pill: the system media controls Spotify publishes to.
+  "Foundation",
+  "Media",
+  "Media_Control",
+  "Storage_Streams",
+  "Win32_Foundation",
+  # Hide when an app is full screen: is the window in front cloaked, and the
+  # rect of the island's display (platform/windows.rs).
+  "Win32_Graphics_Dwm",
+  "Win32_Graphics_Gdi",
+  # The Spotify pill's volume: Spotify's session in the Windows mixer.
+  "Win32_Media_Audio",
+  "Win32_System_Com",
+  "Win32_System_Com_StructuredStorage",
+  # The clipboard history: hearing that the clipboard changed, reading its text or image and
+  # putting an entry back (clipboard.rs).
+  "Win32_System_DataExchange",
+  # Screenshots: the module handle the area-selection window's class is registered under (capture.rs).
+  "Win32_System_LibraryLoader",
+  "Win32_System_Variant",
+  "Win32_Security",
+  "Win32_Security_Authorization",
+  # "Open terminal": the relay's process tree leads to the session's window.
+  "Win32_System_Diagnostics_ToolHelp",
+  # The clipboard hands its contents over as global memory (clipboard.rs).
+  "Win32_System_Memory",
+  "Win32_System_Ole",
+  "Win32_System_Pipes",
+  "Win32_System_Registry",
+  "Win32_System_SystemInformation",
+  "Win32_System_Threading",
+  "Win32_UI_Input_KeyboardAndMouse",
+  "Win32_UI_Shell",
+  # The shelf's "Show in folder": the item lists SHOpenFolderAndSelectItems takes (shelf.rs).
+  "Win32_UI_Shell_Common",
+  "Win32_UI_WindowsAndMessaging",
+] }
+# The clipboard for pasting dropped files into a terminal (paste/), kept out of the clipboard history. MIT/Apache-2.0.
+arboard = { version = "3.6", default-features = false }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Secret Service (GNOME Keyring, KWallet) over D-Bus, encrypted in transit.
+keyring = { version = "3", features = ["sync-secret-service", "crypto-rust"] }
+libc = "0.2"
+# The GTK that Tauri already runs on, to reach its window for layer-shell and
+# the input region. libgtk-layer-shell itself is called directly (platform/linux.rs).
+gtk = "0.18"
+# libdbus, which keyring's Secret Service already links, so nothing new is
+# downloaded: Wayland global shortcuts through the XDG GlobalShortcuts portal
+# (portal.rs), the Spotify pill over MPRIS (spotify.rs) and "Open terminal"
+# through KWin's scripting (platform/linux_focus.rs).
+dbus = "0.9.12"
+# EWMH on X11 for "Open terminal", already in the tree (global-hotkey).
+x11rb = { version = "0.13", default-features = false, features = ["xinput", "xtest"] }
+# The clipboard for pasting dropped files into a terminal (X11, and Wayland's data-control protocol).
+arboard = { version = "3.6", default-features = false, features = ["wayland-data-control"] }

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Liv — island preview</title>
+  <style>html,body{background:#3a4a5a !important}</style></head>
+  <body>
+    <div id="root"></div>
+    <!--
+      The island in a plain browser, driven from the console (__island, __state,
+      __emit). The page follows the mouse itself (cursorPoll: false), so the
+      pointer does what it does in the app: on the open island a click on Liv's
+      head annoys it, three make it dizzy, resting on it for 2 s wins it over.
+
+      Liv's pocket:
+      (a) the greeting plays as the page loads; again:
+          __island.fsm.forceHidden(); __island.greet()
+          (started with the computer, no greeting: put atLogin: true in the boot answer below)
+      (b) a session finishing while the island is compact:
+          __island.fsm.forceHidden(); __island.reveal(); __emit("hook", { hook_event_name: "Stop", session_id: "s1", cwd: "C:/code/proj", last_assistant_message: "Listo." })
+      (c) a session failing while the island is closed:
+          __island.fsm.forceHidden(); __emit("hook", { hook_event_name: "StopFailure", session_id: "s1", cwd: "C:/code/proj", last_assistant_message: "API Error: Rate limit reached" })
+      (d) good news from the virtual office (its pill in front, or "alerts from all pills" on):
+          __island.fsm.forceHidden(); __state.settings.alertsFromAllPills = true; __emit("office", { type: "agent.state", agent: { id: "editora", name: "Editora" }, state: "working" }); __emit("office", { type: "news", news: { title: "Vídeo 12 publicado", level: "success" } })
+      (e) a click on the pocket: with the mouse, or
+          document.getElementById("island").dispatchEvent(new MouseEvent("mousedown", { bubbles: true }))
+
+      Liv's wardrobe: right-click Liv's head on the open island (again to go back), or
+          __island.openWardrobe(); __island.setPinned(true)
+      then hover the chips (Liv tries each on) and click one to keep it. What it wears, as Settings would say it:
+          __emit("settings-changed", { livOutfit: "headphones" })
+      and the shortcut (Ctrl+Alt+G in the app):
+          __emit("shortcut", "wardrobeToggle")
+      Folded, nothing shows but the star: __emit("settings-changed", { livOutfit: "star" }); __island.collapse()
+
+      Liv dancing: music playing on the Spotify pill, its card in front on the open island
+          __state.settings.activeIntegrations = ["integration_spotify"]; __state.loadIntegrationTasks(); __state.setFocus("integration_spotify")
+          __emit("spotify", { running: true, installed: true, playing: true, track: { id: "spotify:track:demo", title: "Get Lucky", artist: "Daft Punk", album: "Random Access Memories", duration: 248, artUrl: null }, position: 12, positionAt: Date.now(), shuffle: false, repeat: false, volume: 70 })
+          __island.alert("overview"); __island.setPinned(true)
+      and it eases out when the music pauses (the card's own button does it too), another pill comes in front or the island folds:
+          __emit("spotify", { running: true, installed: true, playing: false, track: { id: "spotify:track:demo", title: "Get Lucky", artist: "Daft Punk", album: "Random Access Memories", duration: 248, artUrl: null }, position: 40, positionAt: Date.now(), shuffle: false, repeat: false, volume: 70 })
+
+      The tools: the clipboard's history on the left, the shelf on the right. The clipboard tab in the header, or the shortcut (Ctrl+Alt+V in the app; again folds the island):
+          __emit("shortcut", "toolsToggle"); __island.setPinned(true)
+      What was copied, as Rust sends it — the whole list, newest first, on every change (__clips(list) is __emit("clipboard-history", list), remembered by the fake Rust below):
+          __clips([{ id: 5, kind: "text", preview: "https://example.com/docs/clipboard", chars: 34, at: Date.now() }, { id: 4, kind: "text", preview: "#1DB954", chars: 7, at: Date.now() - 5 * 60000 }, { id: 3, kind: "image", width: 1920, height: 1080, thumb: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", at: Date.now() - 2 * 3600000 }, { id: 2, kind: "text", preview: "a note
+over two lines, long enough to be cut at the end of its row in the card", chars: 81, at: Date.now() - 26 * 3600000 }])
+          __clips(Array.from({ length: 12 }, (_, i) => ({ id: 20 - i, kind: "text", preview: "copy " + (20 - i), chars: 7, at: Date.now() - i * 90000 })))      (more than fit: the wheel scrolls)
+      A click on a row answers "pasted" and moves it to the top, its × forgets it, Clear empties the list. Liv's own window in front, the clipboard refusing, the entry gone:
+          __answers.clipboard_paste = () => "copied"      ("failed", "gone")
+      A copy made while the island is shut must show nothing: __island.fsm.forceHidden(); then __clips([...]) and the island stays shut.
+      The history turned off in Settings, and on again:
+          __emit("settings-changed", { clipboardHistory: false }); __clips([])
+          __emit("settings-changed", { clipboardHistory: true })
+
+      The shelf, in the right card of the tools: files kept at hand, as Rust sends them — the whole list, newest first, on every change
+      (__shelf(list) is __emit("shelf", list), remembered by the fake Rust below, which also answers shelf_list when the tools come up):
+          __shelf([{ id: 4, path: "C:\\Users\\me\\Pictures\\Liv\\Captura 2026-11-17 15.53.07.png", name: "Captura 2026-11-17 15.53.07.png", size: 482133, isDir: false, addedAt: Date.now(), thumb: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", missing: false }, { id: 3, path: "C:\\Users\\me\\Documents\\informe-trimestral-final.pdf", name: "informe-trimestral-final.pdf", size: 1288490, isDir: false, addedAt: Date.now() - 60000, thumb: "", missing: false }, { id: 2, path: "C:\\code\\proj", name: "proj", size: 0, isDir: true, addedAt: Date.now() - 3600000, thumb: "", missing: false }, { id: 1, path: "C:\\Users\\me\\Downloads\\borrado.zip", name: "borrado.zip", size: 0, isDir: false, addedAt: Date.now() - 86400000, thumb: "", missing: true }])
+          __shelf(Array.from({ length: 14 }, (_, i) => ({ id: 30 - i, path: "C:\\tmp\\archivo-" + (30 - i) + ".txt", name: "archivo-" + (30 - i) + ".txt", size: 1500 * (i + 1), isDir: false, addedAt: Date.now(), thumb: "", missing: false })))      (more than fit: the wheel scrolls)
+      A click on an item answers "copied"; the small buttons that show under the pointer open it, show it in its folder, take it off the shelf; Clear empties it.
+      The clipboard refusing, or the file gone meanwhile:
+          __answers.shelf_copy = () => "failed"      ("gone")
+      A press that moves more than 4 px asks Rust for the drag out (shelf_drag; here it only answers, the item is dimmed meanwhile).
+      A file dragged over the island with the tools up lights the shelf, and the drop goes on it instead of to Liv. Drag real files from
+      the file manager onto the page (the fake WebView2 below gives them made-up paths), or by hand:
+          __emit("file-drag", { type: "enter" })
+          __emit("file-drag", { type: "drop", paths: ["C:\\Users\\me\\Desktop\\notas.txt", "C:\\Users\\me\\Desktop\\foto.jpg"] })      (or { type: "leave" })
+      On any other view the same drag is Liv's, as before: the drop card, then the upload.
+      Screenshots: the two buttons in the shelf's heading (an area folds the island first), or the shortcuts:
+          __emit("shortcut", "captureArea"); __emit("shortcut", "captureScreen")
+      The fake Rust answers with a `capture` a moment later: the new item on top of the shelf, lit, and the island open on the tools. By hand:
+          __island.collapse(); __emit("capture", { ok: true, id: 4, name: "Captura 2026-11-17 15.53.07.png", width: 1920, height: 1080 })
+          __emit("capture", { ok: false })      ("Couldn’t take the screenshot" in the card, for a moment)
+      It must not open over a card that waits, a paused island or one parked for a full-screen app:
+          __state.paused = true; __island.fsm.forceHidden(); __emit("capture", { ok: false })
+
+      The open island's shape (Settings → General → Appearance; src/core/appearance.ts): its width (640–960, steps of 10), what is
+      added to every view's height (0–160, steps of 10), the rounding of its corners (0–40) and the whole island's opacity (40–100 %).
+      Open it and keep it open, then say what Settings would say once the sliders are saved — the island gets there with its usual motion:
+          __island.alert("overview"); __island.setPinned(true)
+          __emit("settings-changed", { islandWidth: 800, islandExtraHeight: 40, islandRadius: 30, islandOpacity: 80 })
+          __emit("settings-changed", { islandWidth: 960, islandExtraHeight: 160, islandRadius: 40, islandOpacity: 60 })      (the most of each)
+          __emit("settings-changed", { islandRadius: 0 })      (square corners; any of the four alone)
+      While a slider is dragged the island hears the same four before anything is saved (lib.rs: preview_appearance), and a folded
+      island opens to show what is being chosen, then folds on its usual clock after the last move:
+          __island.setPinned(false); __island.collapse()
+          __emit("island-appearance", { islandWidth: 720 }); __emit("island-appearance", { islandWidth: 730 })
+      Every view at that size — the cards centre what they say next to Liv, the lists (tools, chat, a diff) take the height, and the drop
+      flow keeps its 640 × 176 drawing in the middle:
+          __island.setView("tools")      ("overview", "empty", "approval", "question", "error", "finished", "upload", "uploading", "choose",
+                                          "prompt", "note", "settings", "recap", "update", "whatsNew", "launch", "wardrobe")
+          __emit("file-drag", { type: "enter" })      (the drop sequence itself; { type: "leave" } ends it)
+      Folded and in Liv's pocket the size is what it always was; only the corners and the opacity follow:
+          __island.setPinned(false); __island.collapse()
+      A value out of range is brought into it (4000 is 960, opacity 3 is 40 %), and this puts the inherited island back:
+          __emit("settings-changed", { islandWidth: 640, islandExtraHeight: 0, islandRadius: 22, islandOpacity: 100 })
+    -->
+    <script>
+      // The clipboard's history as the fake Rust holds it.
+      window.__clipList = [];
+      window.__clips = (list) => {
+        window.__clipList = list;
+        window.__emit("clipboard-history", list);
+      };
+      // Dropped files, as in the app: the page hands them to WebView2, which answers with their paths (src-tauri/src/webview_drop.rs).
+      window.chrome = window.chrome || {};
+      window.chrome.webview = {
+        postMessageWithAdditionalObjects: (_message, files) =>
+          window.__emit("file-drag", { type: "drop", paths: Array.from(files, (file) => "C:\\dropped\\" + file.name) }),
+      };
+      // The shelf as the fake Rust holds it, and the screenshots it pretends to take.
+      window.__shelfList = [];
+      window.__shelf = (list) => {
+        window.__shelfList = list;
+        window.__emit("shelf", list);
+      };
+      window.__fakeFile = (path) => ({ id: Math.max(0, ...window.__shelfList.map((e) => e.id)) + 1, path, name: path.split(/[\\/]/).pop(), size: 48213, isDir: false, addedAt: Date.now(), thumb: "", missing: false });
+      window.__fakeCapture = (width, height) => {
+        const two = (n) => String(n).padStart(2, "0");
+        const now = new Date();
+        const name = `Captura ${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())} ${two(now.getHours())}.${two(now.getMinutes())}.${two(now.getSeconds())}.png`;
+        setTimeout(() => {
+          const item = { ...window.__fakeFile("C:\\Users\\me\\Pictures\\Liv\\" + name), thumb: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" };
+          window.__shelf([item, ...window.__shelfList]);
+          window.__emit("capture", { ok: true, id: item.id, name, width, height });
+        }, 600);
+      };
+      window.__answers = {
+        boot: { settings: { language: "es" }, cursorPoll: false, parked: false, scaleInForce: 1, atLogin: false },
+        clipboard_history: () => window.__clipList,
+        clipboard_paste: ({ id }) => {
+          const entry = window.__clipList.find((e) => e.id === id);
+          if (!entry) return "gone";
+          window.__clips([{ ...entry, at: Date.now() }, ...window.__clipList.filter((e) => e !== entry)]);
+          return "pasted";
+        },
+        clipboard_remove: ({ id }) => window.__clips(window.__clipList.filter((e) => e.id !== id)),
+        clipboard_clear: () => window.__clips([]),
+        // Liv takes a dropped file: its original also goes on the shelf, as in the app.
+        ingest_file: ({ path }) => {
+          window.__answers.shelf_add({ path });
+          return { name: path.split(/[\\/]/).pop(), path, size: 48213 };
+        },
+        shelf_list: () => window.__shelfList,
+        shelf_add: ({ path }) => {
+          const there = window.__shelfList.find((e) => e.path === path);
+          window.__shelf([there ?? window.__fakeFile(path), ...window.__shelfList.filter((e) => e !== there)]);
+        },
+        shelf_remove: ({ id }) => window.__shelf(window.__shelfList.filter((e) => e.id !== id)),
+        shelf_clear: () => window.__shelf([]),
+        shelf_open: ({ id }) => window.__shelfList.some((e) => e.id === id && !e.missing),
+        shelf_reveal: ({ id }) => window.__shelfList.some((e) => e.id === id && !e.missing),
+        shelf_copy: ({ id }) => {
+          const item = window.__shelfList.find((e) => e.id === id);
+          return item && !item.missing ? "copied" : "gone";
+        },
+        shelf_drag: () => new Promise((resolve) => setTimeout(() => resolve(true), 1200)),
+        capture_screen: () => window.__fakeCapture(1920, 1080),
+        capture_area: () => window.__fakeCapture(640, 360),
+      };
+    </script>
+    <script type="module">
+      import "./tauri-mock.ts";
+      await import("/src/main.ts");
+    </script>
+  </body>
+</html>

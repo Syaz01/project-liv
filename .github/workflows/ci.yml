@@ -1,0 +1,56 @@
+# The checks every change must pass, on the platform Liv is built for.
+# Only GitHub's own actions are used; Rust is the one the runner ships.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            target
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+
+      - run: npm ci
+
+      # Builds the relay (the bundle lists it as a resource) and the pages
+      # (the app embeds them): both must exist before the app compiles.
+      - name: Type-check and build the pages
+        run: npm run build
+
+      - name: Page tests
+        run: npm test
+
+      - name: Rust tests
+        run: cargo test --workspace --locked
+
+      - name: No warnings
+        run: cargo check -p liv --locked
+        env:
+          RUSTFLAGS: -D warnings
