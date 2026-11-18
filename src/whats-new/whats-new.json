@@ -2,6 +2,55 @@
   "about": "What's new, shown once in the island after Liv is updated (src/whats-new/). Every release adds its entry here, in English and Spanish: 1 to 4 items, a short title and one line each, an icon from ICON_NAMES (whats-new.ts). tests/whats-new.test.mjs checks the entry of the version that ships.",
   "releases": [
     {
+      "version": "0.1.1",
+      "items": [
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "The models of your subscription",
+            "es": "Los modelos de tu suscripción"
+          },
+          "detail": {
+            "en": "With Codex or Antigravity answering, the chat's picker lists their models.",
+            "es": "Con Codex o Antigravity respondiendo, el selector del chat muestra sus modelos."
+          }
+        },
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "A tidier chat",
+            "es": "Un chat más limpio"
+          },
+          "detail": {
+            "en": "A button for a new conversation, a small picker, and Liv in the colour of the AI that answers.",
+            "es": "Un botón de conversación nueva, un selector pequeño y Liv del color de la IA que responde."
+          }
+        },
+        {
+          "icon": "terminal",
+          "title": {
+            "en": "Antigravity only answers",
+            "es": "Antigravity solo responde"
+          },
+          "detail": {
+            "en": "In the chat it can no longer write files or run commands.",
+            "es": "En el chat ya no puede escribir archivos ni ejecutar comandos."
+          }
+        },
+        {
+          "icon": "clock",
+          "title": {
+            "en": "New tools, found at once",
+            "es": "Herramientas nuevas, al momento"
+          },
+          "detail": {
+            "en": "A tool installed while Liv is open is found without starting Liv again.",
+            "es": "Una herramienta instalada con Liv abierto se encuentra sin reiniciarlo."
+          }
+        }
+      ]
+    },
+    {
       "version": "0.1.0",
       "items": [
         {
