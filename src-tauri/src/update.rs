@@ -1,10 +1,9 @@
 // "Liv 0.6.0 is out" in the island, and on Windows one click to install it.
 // Port of MacUpdate.swift / MacUpdater.swift (the Mac's GitHub build).
 //
-// Off until Liv publishes releases: RELEASES_REPO below is None, so nothing
-// here ever reaches the network, the island never asks, and neither Settings
-// nor the tray offers anything. Everything else in this file is what runs once
-// a repository is named there.
+// On: RELEASES_REPO below names the repository Liv's releases are published
+// in. With None there instead, nothing here ever reaches the network, the
+// island never asks, and neither Settings nor the tray offers anything.
 //
 // Nothing is asked of GitHub before the user says yes: the island asks once
 // (again a day later at most if the card was left unanswered), or Settings →
@@ -35,11 +34,11 @@ use crate::i18n::t;
 use crate::island::WINDOW_LABEL;
 
 /// The GitHub repository Liv's releases are published in, as `Some("owner/name")`.
-/// None: Liv has no release channel yet and the updater is off — no request is
-/// ever made, the island never asks to look for new versions, Settings shows no
-/// Updates rows and the tray no update item. Naming the repository here is all
-/// it takes to turn updates on.
-pub const RELEASES_REPO: Option<&str> = None;
+/// None would turn the updater off: no request ever made, the island never
+/// asking to look for new versions, no Updates rows in Settings and no update
+/// item in the tray. A fork that publishes its own releases names its own
+/// repository here.
+pub const RELEASES_REPO: Option<&str> = Some("Syaz01/project-liv");
 
 /// What is asked of GitHub: the releases of `repo`. None: nothing to ask.
 fn releases_url(repo: Option<&str>) -> Option<String> {

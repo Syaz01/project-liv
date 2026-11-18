@@ -33,8 +33,9 @@ copia y diff, las tarjetas de permiso y de pregunta, y otros agentes como Codex,
 Cursor o Gemini CLI) y varias funciones (la música, el chat con varios
 proveedores, soltar archivos, GitHub y otras integraciones, el resumen
 semanal). De ellas se han revisado para Liv el canal con Claude Code, el chat
-con Claude, la música y GitHub; el resto funciona como llegó. El aviso de
-versiones nuevas está apagado hasta que Liv publique la primera.
+con Claude, la música y GitHub; el resto funciona como llegó. Liv avisa de las
+versiones nuevas que se publican en este repositorio: pregunta antes de mirar
+la primera vez y no envía nada de quien la usa.
 
 La píldora de **Música** muestra lo que suena en cualquier aplicación que se lo
 cuente a Windows (Spotify, el navegador, un reproductor), con los controles que

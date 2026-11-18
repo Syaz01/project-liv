@@ -55,18 +55,13 @@ público cuando quieras desde Settings → General → Change visibility.
 La integración continua (`.github/workflows/ci.yml`) se ejecuta sola con cada
 subida a `main`: compila y pasa todas las pruebas en Windows.
 
-## 3. Encender el aviso de versiones nuevas (opcional)
+## 3. El aviso de versiones nuevas
 
-Está apagado hasta que exista dónde mirar. En
-`src-tauri/src/update.rs`, cambia
-
-```rust
-pub const RELEASES_REPO: Option<&str> = None;
-```
-
-por el repositorio público, por ejemplo `Some("tu-usuario/liv")`. Liv solo
+Está encendido: `RELEASES_REPO` en `src-tauri/src/update.rs` nombra el
+repositorio donde se publican las versiones (`Syaz01/project-liv`). Liv solo
 consulta la lista de versiones de ese repositorio, sin enviar nada del usuario,
-y pregunta antes de hacerlo la primera vez.
+y pregunta antes de hacerlo la primera vez. Quien publique su propia copia pone
+ahí su repositorio, o `None` para apagarlo.
 
 ## 4. Publicar una versión
 
