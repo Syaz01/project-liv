@@ -419,11 +419,9 @@ pub fn cli_candidates(name: &str) -> Vec<PathBuf> {
 /// input region decides click-through (see the top of this file).
 pub const CURSOR_POLL: bool = false;
 
-/// Folded, the window itself shrinks to the closed island here (island.rs);
-/// there is nothing to cut out of it.
-pub const FOLDS_BY_REGION: bool = false;
-
-pub fn show_only(_win: &tauri::WebviewWindow, _part: Option<(i32, i32, i32, i32)>) {}
+/// Folded, the window itself shrinks to the closed island here (island.rs),
+/// and its input region is the closed island.
+pub const FOLDS_IN_PLACE: bool = false;
 
 pub fn cursor_physical() -> Option<(f64, f64)> {
     None

@@ -15,7 +15,7 @@ use ::windows::Win32::Foundation::{
 };
 use ::windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED};
 use ::windows::Win32::Graphics::Gdi::{
-    CreateRectRgn, GetMonitorInfoW, MonitorFromPoint, SetWindowRgn, MONITORINFO, MONITOR_DEFAULTTONEAREST,
+    GetMonitorInfoW, MonitorFromPoint, MONITORINFO, MONITOR_DEFAULTTONEAREST,
 };
 use ::windows::Win32::Security::Authorization::{
     ConvertSidToStringSidW, ConvertStringSecurityDescriptorToSecurityDescriptorW, SDDL_REVISION_1,
@@ -434,24 +434,16 @@ fn local_full_name() -> Option<String> {
 /// The 60 Hz poll reads the cursor and flips click-through from it.
 pub const CURSOR_POLL: bool = true;
 
-/// Folded, the island's window keeps the panel's size and only the closed
-/// island of it exists (`show_only`). Shrinking the window to the closed
-/// island instead meant growing and moving it back as it woke: for a frame
-/// the webview's last picture sat in the corner of the new window, and the
-/// closed island was seen to jump to the left before it opened.
-pub const FOLDS_BY_REGION: bool = true;
-
-/// Only `part` of the window exists from now on — it shows nothing and takes
-/// no mouse anywhere else — or, with None, the whole window again. In px of
-/// the window: left, top, width, height.
-pub fn show_only(win: &WebviewWindow, part: Option<(i32, i32, i32, i32)>) {
-    let Some(hwnd) = hwnd_of(win) else { return };
-    unsafe {
-        let region = part.map(|(x, y, w, h)| CreateRectRgn(x, y, x + w.max(1), y + h.max(1)));
-        // Windows owns the region once it is set: it is not ours to delete.
-        let _ = SetWindowRgn(hwnd, region, true);
-    }
-}
+/// Folded, the island's window stays exactly as it is — same size, same place,
+/// whole — and only lets the mouse through; the poll watches for the cursor on
+/// the closed island (island.rs: `wake_if_hovered`). Nothing about the window
+/// changes as it wakes, so nothing can be seen to change:
+/// - shrunk to the closed island, it had to grow and move back, and for a
+///   frame the webview still laid the page out for the small window — the
+///   closed island was seen at the left before it opened;
+/// - cut down to the closed island with a window region, Windows painted the
+///   part that came back white before the webview drew it.
+pub const FOLDS_IN_PLACE: bool = true;
 
 /// Cursor position in physical screen pixels.
 pub fn cursor_physical() -> Option<(f64, f64)> {

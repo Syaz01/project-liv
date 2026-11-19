@@ -112,7 +112,7 @@ pub struct PollGate {
     /// The window's size while collapsed, in page px: the closed island the
     /// page draws, or the wake strip.
     pub collapsed_size: Mutex<(f64, f64)>,
-    /// Folded where the window keeps its size (platform::FOLDS_BY_REGION): the
+    /// Folded where the window stays as it is (platform::FOLDS_IN_PLACE): the
     /// part of it that is the closed island, in px of the window; None open.
     pub folded_part: Mutex<Option<(i32, i32, i32, i32)>>,
     pub rect: Mutex<IslandRect>,
@@ -679,13 +679,13 @@ pub fn apply_geometry(app: &AppHandle) {
     gate.set_scale(&win, island);
 
     let closed = collapsed.map(|size| clamp_collapsed(size, panel));
-    // Folded, the window is the closed island — or, where the platform cuts the
-    // closed island out of it instead, still the whole panel.
-    let (lw, lh) = if platform::FOLDS_BY_REGION { panel } else { closed.unwrap_or(panel) };
+    // Folded, the window is the closed island — or, where the platform folds
+    // in place, still the whole panel: there the window never changes.
+    let (lw, lh) = if platform::FOLDS_IN_PLACE { panel } else { closed.unwrap_or(panel) };
     let pw = scale::physical(lw, island, scale);
     let ph = scale::physical(lh, island, scale);
     let part = closed
-        .filter(|_| platform::FOLDS_BY_REGION)
+        .filter(|_| platform::FOLDS_IN_PLACE)
         .map(|(w, h)| folded_part(pw, scale::physical(w, island, scale), scale::physical(h, island, scale)));
     *gate.folded_part.lock().unwrap() = part;
     let x = mp.x + (ms.width as i32 - pw as i32) / 2;
@@ -707,9 +707,6 @@ pub fn apply_geometry(app: &AppHandle) {
     // it there.
     if gate.parked() {
         let _ = win.set_position(PhysicalPosition::new(PARKED_AT, PARKED_AT));
-        if platform::FOLDS_BY_REGION {
-            platform::show_only(&win, part);
-        }
         return;
     }
     let _ = win.set_position(PhysicalPosition::new(x, y));
@@ -731,17 +728,11 @@ pub fn apply_geometry(app: &AppHandle) {
             let _ = win.set_position(PhysicalPosition::new(x, y));
         }
     }
-    // Last, with the window where and as big as it should be: folded, only the
-    // closed island of it exists; open, all of it.
-    if platform::FOLDS_BY_REGION {
-        platform::show_only(&win, part);
-    }
 }
 
 /// The closed island's place in a window `window_w` px wide that keeps the
 /// panel's size: in the middle of its top edge, where the page draws it. One
-/// px more on each side and below, so a rounding of the page's layout never
-/// shaves the island's edge.
+/// px more on each side and below, so a cursor on its very edge counts.
 pub fn folded_part(window_w: u32, closed_w: u32, closed_h: u32) -> (i32, i32, i32, i32) {
     let w = closed_w.min(window_w) as i32;
     let x = (window_w as i32 - w) / 2;
@@ -882,7 +873,7 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
             // second: on the closed island, it is told to wake up, whether or
             // not the webview delivers the pointer to such a small window.
             loop {
-                if gate.wait_active_for(Duration::from_millis(250)) {
+                if gate.wait_active_for(Duration::from_millis(folded_period_ms())) {
                     break;
                 }
                 look_around();
@@ -988,6 +979,14 @@ pub fn spawn_cursor_poll(app: AppHandle, gate: Arc<PollGate>) {
     });
 }
 
+/// How often the folded island looks for the cursor, in ms. Where the window
+/// folds in place this look is all that wakes the island, so it is quick
+/// enough to feel immediate — one read of the cursor's position twenty times a
+/// second; elsewhere the window itself takes the mouse and this is a fallback.
+fn folded_period_ms() -> u64 {
+    if platform::FOLDS_IN_PLACE { 50 } else { 250 }
+}
+
 /// The cursor is on the folded window: it takes the mouse, and the page hears
 /// `closed-hover` (it opens the compact island).
 fn wake_if_hovered(app: &AppHandle, gate: &PollGate) {
@@ -995,7 +994,7 @@ fn wake_if_hovered(app: &AppHandle, gate: &PollGate) {
     let (Ok(origin), Ok(size), Some((cx, cy))) = (win.outer_position(), win.inner_size(), cursor_physical()) else { return };
     let x = cx - origin.x as f64;
     let y = cy - origin.y as f64;
-    // The closed island: the whole window, or the part of it that is left (FOLDS_BY_REGION).
+    // The closed island: the whole window, or its place in a window that folds in place.
     let (left, top, w, h) = match *gate.folded_part.lock().unwrap() {
         Some((px, py, pw, ph)) => (px as f64, py as f64, pw as f64, ph as f64),
         None => (0.0, 0.0, size.width as f64, size.height as f64),
@@ -1014,8 +1013,11 @@ fn wake_if_hovered(app: &AppHandle, gate: &PollGate) {
 /// the island itself, or to the whole wake strip while collapsed.
 pub fn refresh_click_through(app: &AppHandle, gate: &PollGate) {
     if platform::CURSOR_POLL {
-        set_ignore_cursor(app, false);
-        gate.forget_ignore_state();
+        // Folded in place, the whole window lets the mouse through: the poll
+        // finds the cursor on the closed island and wakes it (wake_if_hovered).
+        let through = platform::FOLDS_IN_PLACE && gate.collapsed.load(Ordering::Relaxed);
+        set_ignore_cursor(app, through);
+        gate.ignoring.store(through, Ordering::Relaxed);
         return;
     }
     let Some(win) = window(app) else { return };
