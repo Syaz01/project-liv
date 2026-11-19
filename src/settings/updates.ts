@@ -6,6 +6,7 @@ import { Bridge } from "../core/bridge";
 import { NO_UPDATE, isBusy, type UpdateStatus } from "../core/update";
 import { h } from "../views/dom";
 import { t } from "../i18n/i18n";
+import { setting } from "./parts";
 
 type Toggle = (on: boolean, onChange: (v: boolean) => void) => HTMLElement;
 
@@ -28,9 +29,11 @@ export function updateRows(toggle: Toggle, version: string): HTMLElement[] {
       draw();
     },
   }) as HTMLButtonElement;
-  const feedback = h("span", { class: "hint" });
-  const footer = h("span", { class: "hint", style: "flex:1 1 0;min-width:0" });
-  const current = h("span", { class: "hint" });
+  const feedback = h("span", { class: "unit" });
+  const footer = h("div", {});
+  // Which version is running is the second row's name; what a check found is under it.
+  const versionRow = setting("", feedback, install, check);
+  const current = versionRow.querySelector(".setting-name") as HTMLElement;
 
   function draw() {
     sw.classList.toggle("on", status.consent === true);
@@ -55,16 +58,7 @@ export function updateRows(toggle: Toggle, version: string): HTMLElement[] {
     for (const row of rows) row.style.display = status.enabled ? "" : "none";
   }
 
-  const rows = [
-    h("div", { class: "row" },
-      h("label", { text: t("Updates") }),
-      sw,
-      h("span", { class: "hint", text: t("Tell me when a new version is out") }),
-    ),
-    h("div", { class: "row" }, h("label", {}), install, check, feedback),
-    h("div", { class: "row" }, h("label", {}), footer),
-    h("div", { class: "row" }, h("label", {}), current),
-  ];
+  const rows = [setting(t("Tell me when a new version is out"), footer, sw), versionRow];
 
   updatesListener = (fresh) => {
     status = fresh;

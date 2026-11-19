@@ -361,6 +361,8 @@ function troupe(canvas: HTMLCanvasElement, band: HTMLElement, copy: HTMLElement,
 /** Each page's colour. */
 const THEMES: Record<string, string> = {
   general: "#8E939C",
+  island: "#5FD9EE",
+  appearance: "#E879F9",
   pills: "#F5A524",
   agents: "#3B9EFF",
   chat: "#E07950",

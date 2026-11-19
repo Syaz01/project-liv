@@ -44,13 +44,18 @@ const liv = (slot: number, more: Partial<Omit<CastMember, "slot">> = {}): CastMe
 const IDLING: Pick<Cast, "bits" | "every"> = { bits: ["wave", "hop", "glance"], every: [6000, 12000] };
 
 /**
- * Each page's cast. General: Liv itself, in what it wears. Active pills: a line-up in four
+ * Each page's cast. General, Island and Appearance: Liv itself, in what it
+ * wears — looking up at the island on its page. Active pills: a line-up in four
  * pills' colours. Agents: one working, one thinking, one asking. Chat: two
  * facing each other, one of them typing its answer. Integrations: three in
  * services' colours. Shortcuts: one at an imaginary keyboard, typing in bursts.
  */
 export const CASTS: Record<string, Cast> = {
   general: { ...IDLING, members: [liv(64, { dressed: true })] },
+  // Island: Liv looking up at where the island is.
+  island: { ...IDLING, members: [liv(60, { dressed: true, gaze: [0, -0.7] })] },
+  // Appearance: Liv itself, in what it wears — the one that tries on what is picked on this page.
+  appearance: { ...IDLING, members: [liv(62, { dressed: true })] },
   pills: {
     ...IDLING,
     members: [

@@ -52,8 +52,12 @@ test("every cast can be drawn: known pills, known states, slots of 46 to 64 px, 
 test("each page reads differently", () => {
   // General: Liv itself, the largest of all.
   assert.deepEqual(CASTS.general.members, [{ pill: null, state: "idle", slot: 64, gaze: [0, 0], dressed: true }]);
-  // It alone is Liv itself, in what Liv wears: the others are pills' figures and states, and wear nothing.
-  const others = Object.entries(CASTS).filter(([page]) => page !== "general").flatMap(([, cast]) => cast.members);
+  // Island and Appearance are Liv itself too, a little smaller: on Island it looks up at the island.
+  assert.deepEqual(CASTS.island.members, [{ pill: null, state: "idle", slot: 60, gaze: [0, -0.7], dressed: true }]);
+  assert.deepEqual(CASTS.appearance.members, [{ pill: null, state: "idle", slot: 62, gaze: [0, 0], dressed: true }]);
+  // Only those three wear what Liv wears: the others are pills' figures and states, and wear nothing.
+  const itself = ["general", "island", "appearance"];
+  const others = Object.entries(CASTS).filter(([page]) => !itself.includes(page)).flatMap(([, cast]) => cast.members);
   assert.ok(others.length > 10 && others.every((m) => m.dressed === false));
   const largest = Math.max(...Object.values(CASTS).flatMap((cast) => cast.members.map((m) => m.slot)));
   assert.equal(CASTS.general.members[0].slot, largest);
@@ -93,7 +97,7 @@ test("each page reads differently", () => {
   assert.deepEqual(CASTS.shortcuts.bits, ["type"]);
   assert.ok(CASTS.shortcuts.every[1] < CASTS.general.every[0], "in bursts, not now and then");
   // Everyone else: a wave, a hop or a glance, every 6 to 12 s.
-  for (const page of ["general", "pills", "agents", "chat", "integrations"]) {
+  for (const page of ["general", "island", "appearance", "pills", "agents", "chat", "integrations"]) {
     assert.deepEqual(CASTS[page].bits, ["wave", "hop", "glance"], page);
     assert.deepEqual(CASTS[page].every, [6000, 12000], page);
   }

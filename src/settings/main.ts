@@ -20,7 +20,7 @@ import { ISLAND_SCALES, clampedScale, islandScale, scaleLabel } from "../core/sc
 import { PET_EVENTS } from "../pet/wire";
 import { OUTFIT_CHOICES, outfitChoice, wornOutfit } from "../robot/outfits";
 import type { UpdateStatus } from "../core/update";
-import { SOUND_NAMES } from "../core/sound";
+import { SOUND_NAMES, soundFilesHint } from "../core/sound";
 import {
   MAX_DECLARED, PILL_CATALOG, PILL_CATEGORIES, chooseMainPill, mainPillChoices,
   sanitizeDeclared, toggleDeclared, type PillDefinition,
@@ -34,7 +34,7 @@ import { agentsSection } from "./agents";
 import { appearanceSection } from "./appearance";
 import { updateRows, updatesListener } from "./updates";
 import { colorDot } from "./colors";
-import { renderDiff, statusDot } from "./parts";
+import { group, renderDiff, setting, statusDot } from "./parts";
 import {
   LANGUAGES, N_, onLanguageChange, resolveLanguage, setLanguage, systemLanguages, t, tn,
 } from "../i18n/i18n";
@@ -1086,7 +1086,13 @@ let generalSync: (() => void) | null = null;
  */
 let scaleInForce: number | null = null;
 
-function generalSection(): HTMLElement {
+/**
+ * The settings that used to be one long General page, each as a row of its
+ * own (parts.ts: setting): the pages below pick theirs. Built anew for the
+ * page on screen, with `generalSync` showing them as the settings have them
+ * after a change made elsewhere.
+ */
+function generalRows() {
   const volume = h("input", {
     type: "range", min: "0", max: "0.2", step: "0.005",
     value: String(settings.soundVolume),
@@ -1206,7 +1212,7 @@ function generalSection(): HTMLElement {
       },
     }),
   );
-  const sizeClamped = h("div", { class: "hint" });
+  const sizeClamped = h("div", { class: "setting-about warn" });
   const showSize = () => {
     const current = islandScale(settings.islandScale);
     sizes.forEach((button, i) => {
@@ -1243,7 +1249,7 @@ function generalSection(): HTMLElement {
     dressLiv();
     void save();
   });
-  const petHint = h("div", { class: "hint" });
+  const petHint = h("div", {});
   // The hint names the shortcut as it is bound now, or leaves it out when it has no key.
   const showPetHint = () => {
     const keys = activeKeys(settings.shortcuts).find(([id]) => id === "desktopToggle")?.[1];
@@ -1275,101 +1281,112 @@ function generalSection(): HTMLElement {
   volume.addEventListener("blur", () => generalSync?.());
   autoClose.addEventListener("blur", () => generalSync?.());
 
-  return h(
-    "section",
-    { "data-anchor": "general.general" },
-    h("h2", {}, h("span", { text: t("General") })),
-    h("div", { class: "row" },
-      h("label", { text: t("Sound") }),
-      sound,
-      volume,
-    ),
-    h("div", { class: "row" }, soundsFolder, reloadSounds, customCount),
-    h("div", { class: "hint", text: t("Liv has its own sounds. To replace one, put a file named peek, open, close, blip, tick, pop, send, work, finish, error, approval, question, approve or rate (.wav, .mp3, .ogg, .m4a, .aac or .flac) in the sounds folder, then Reload.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Open on hover") }),
-      openOnHover,
-    ),
-    h("div", { class: "hint", text: t("Hovering the island opens it; it folds again shortly after the pointer leaves.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Fold as the pointer leaves") }),
+  const seconds = h("span", { class: "unit", text: t("seconds") });
+  const names = h("div", { class: "fine", text: soundFilesHint() });
+  const ownSounds = setting(
+    t("Your own sounds"),
+    t("To replace a sound, put a file with its name in the sounds folder, then reload."),
+    soundsFolder, reloadSounds, customCount,
+  );
+  ownSounds.querySelector(".setting-text")?.append(names);
+  const size = setting(t("Island size"), t("Makes the island and its text bigger."), ...sizes);
+  size.querySelector(".setting-text")?.append(sizeClamped);
+
+  return {
+    sound: setting(t("Sound"), t("Liv's sounds, and how loud they are."), volume, sound),
+    ownSounds,
+    language: languageRow(),
+    autostart: setting(t("Launch at startup"), t("Liv starts when you sign in to Windows."), autostart),
+    openWindow: setting(t("Open this window when Liv starts"), t("Not when Liv starts with the computer."), openWindow),
+    openOnHover: setting(t("Open on hover"), t("Resting the pointer on the island opens it."), openOnHover),
+    foldOnLeave: setting(
+      t("Fold as the pointer leaves"),
+      t("The island folds as soon as the pointer leaves it. Off, it waits the auto-close time."),
       foldOnLeave,
     ),
-    h("div", { class: "hint", text: t("The open island folds as soon as the pointer leaves it, clicked or not. Off, it waits the auto-close time below.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Open for every pill’s alerts") }),
-      toggle(settings.alertsFromAllPills, (v) => { settings.alertsFromAllPills = v; void save(); }),
-    ),
-    h("div", { class: "hint", text: t("When a pill other than the one shown finishes or hits an error, the island shows it for a moment, then the pill you had comes back.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Show clock in the island") }),
-      toggle(settings.showClock, (v) => { settings.showClock = v; void save(); }),
-    ),
-    h("div", { class: "hint", text: t("The date and the time in the middle of the island when it is compact.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Closed island shows") }),
-      closed,
-    ),
-    h("div", { class: "hint", text: t("Once closed, a small island stays at the top of the screen. Hover it to bring Liv back. If hidden, move the pointer to the middle of the top edge of the screen.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Auto-close") }),
-      autoClose,
-      h("span", { class: "hint", text: t("seconds") }),
-    ),
-    h("div", { class: "hint", text: t("How long the open island stays once the pointer is gone. With folding as the pointer leaves, only when it opened on its own: an alert, a shortcut.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Compact island closes") }),
+    autoClose: setting(t("Auto-close"), t("How long the island stays open with the pointer away."), autoClose, seconds),
+    compactClose: setting(
+      t("Compact island closes"),
+      t("After folding, how long it stays compact before it closes to the small one."),
       compactClose,
     ),
-    h("div", { class: "hint", text: t("Folded, the island stays compact for this long, then closes to the small one at the top of the screen.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Show the island when music starts") }),
+    allAlerts: setting(
+      t("Open for every pill’s alerts"),
+      t("When another pill finishes or fails, the island shows it for a moment."),
+      toggle(settings.alertsFromAllPills, (v) => { settings.alertsFromAllPills = v; void save(); }),
+    ),
+    music: setting(
+      t("Show the island when music starts"),
+      t("The closed island shows itself when something starts playing."),
       musicReveal,
     ),
-    h("div", { class: "hint", text: t("When something starts playing, the closed island shows itself compact. Off, it stays closed.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Tell me when a download finishes") }),
+    downloads: setting(
+      t("Tell me when a download finishes"),
+      t("The island shows the file when your browser finishes a download. Liv only looks at the names in your Downloads folder."),
       downloadAlerts,
     ),
-    h("div", { class: "hint", text: t("When your browser finishes a download in your Downloads folder, the island shows it: open it, show it in its folder, or put it on the shelf. Liv only looks at the names in that folder; nothing leaves your PC.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Island lives on") }),
-      screen,
+    clock: setting(
+      t("Show clock in the island"),
+      t("The date and the time in the middle of the island when it is compact."),
+      toggle(settings.showClock, (v) => { settings.showClock = v; void save(); }),
     ),
-    h("div", { class: "row" },
-      h("label", { text: t("Island size") }),
-      ...sizes,
+    closed: setting(
+      t("Closed island shows"),
+      t("What stays at the top of the screen when the island closes. If you hide it, move the pointer to the middle of the top edge to bring it back."),
+      closed,
     ),
-    sizeClamped,
-    h("div", { class: "hint", text: t("Makes the island and its text bigger.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Hide when an app is full screen") }),
+    screen: setting(t("Island lives on"), t("The display the island sits on."), screen),
+    fullscreen: setting(
+      t("Hide when an app is full screen"),
+      t("For films, games and presentations: the island comes back when you leave full screen."),
       hideOnFullscreen,
     ),
-    h("div", { class: "hint", text: t("For films, games and presentations: the island comes back when you leave full screen.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Liv on the desktop") }),
-      petOut,
-    ),
-    petHint,
-    h("div", { class: "row" },
-      h("label", { text: t("Liv wears") }),
+    size,
+    outfit: setting(
+      t("Liv wears"),
+      t("Auto follows the season. Right-click Liv to try things on; with the island folded, only the star fits."),
       outfit,
     ),
-    h("div", { class: "hint", text: t("Auto follows the season. Right-click Liv to try things on; with the island folded, only the star fits.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Launch at startup") }),
-      autostart,
+    pet: setting(t("Liv on the desktop"), petHint, petOut),
+  };
+}
+
+/** Settings → General: what is about Liv as an app — its sound, its language, how it starts, its updates. */
+function pageGeneral(): HTMLElement[] {
+  const rows = generalRows();
+  return [
+    group("general.sound", t("Sound"), null, rows.sound, rows.ownSounds),
+    group("general.startup", t("Language and startup"), null, rows.language, rows.autostart, rows.openWindow),
+    group("general.updates", t("Updates and history"), null, ...updateRows(toggle, version), ...recapRows()),
+    toolsSection(),
+  ];
+}
+
+/** Settings → Island: when it opens and folds, what it tells you, what it shows and where. */
+function pageIsland(): HTMLElement[] {
+  const rows = generalRows();
+  return [
+    group(
+      "island.open", t("Opening and folding"), t("When the island opens, and how long it stays."),
+      rows.openOnHover, rows.foldOnLeave, rows.autoClose, rows.compactClose,
     ),
-    h("div", { class: "row" },
-      h("label", { text: t("Open this window when Liv starts") }),
-      openWindow,
+    group(
+      "island.alerts", t("Alerts"), t("What makes the island show itself."),
+      rows.allAlerts, rows.music, rows.downloads,
     ),
-    h("div", { class: "hint", text: t("Not when Liv starts with the computer.") }),
-    ...recapRows(),
-    ...updateRows(toggle, version),
-    languageRow(),
-  );
+    group("island.shows", t("What it shows"), null, rows.clock, rows.closed),
+    group("island.where", t("Where it lives"), null, rows.screen, rows.fullscreen),
+  ];
+}
+
+/** Settings → Appearance: how big the island is, the shape of the open one, and Liv. */
+function pageAppearance(): HTMLElement[] {
+  const rows = generalRows();
+  return [
+    group("appearance.size", t("Size"), null, rows.size),
+    appearanceBox(),
+    group("appearance.liv", t("Liv"), null, rows.outfit, rows.pet),
+  ];
 }
 
 // ── Appearance ────────────────────────────────────────────────────────────────
@@ -1397,7 +1414,7 @@ let toolsSync: (() => void) | null = null;
  */
 function toolsSection(): HTMLElement {
   const history = toggle(settings.clipboardHistory, (v) => { settings.clipboardHistory = v; void save(); });
-  const opens = h("div", { class: "hint" });
+  const opens = h("div", {});
   toolsSync = () => {
     setSwitch(history, settings.clipboardHistory);
     const keys = activeKeys(settings.shortcuts).find(([id]) => id === "toolsToggle")?.[1];
@@ -1406,22 +1423,17 @@ function toolsSection(): HTMLElement {
       : t("What you copy is listed in the island's Tools view: click an entry to paste it where you were typing.");
   };
   toolsSync();
-  return h(
-    "section",
-    { "data-anchor": "general.tools" },
-    h("h2", {}, h("span", { text: t("Tools") })),
-    h("div", { class: "row" },
-      h("label", { text: t("Clipboard history") }),
-      history,
-    ),
-    opens,
-    h("div", { class: "hint", text: t("Kept in memory only, never on disk, and forgotten when Liv quits. Copies that a password manager marks as private are skipped.") }),
-    h("div", { class: "row" },
-      h("label", { text: t("Screenshots") }),
-      h("button", { text: t("Open screenshots folder"), onclick: () => void Bridge.openCapturesFolder() }),
-    ),
-    h("div", { class: "hint", text: t("Screenshots are saved as PNG in the Liv folder inside Pictures. Each one is also copied to the clipboard and put on the shelf.") }),
+  const screenshots = setting(
+    t("Screenshots"),
+    t("Saved as PNG in the Liv folder inside Pictures. Each one is also copied to the clipboard and put on the shelf."),
+    h("button", { text: t("Open screenshots folder"), onclick: () => void Bridge.openCapturesFolder() }),
   );
+  const clipboard = setting(t("Clipboard history"), opens, history);
+  clipboard.querySelector(".setting-text")?.append(h("div", {
+    class: "fine",
+    text: t("Kept in memory only, never on disk, and forgotten when Liv quits. Copies that a password manager marks as private are skipped."),
+  }));
+  return group("general.tools", t("Tools"), null, clipboard, screenshots);
 }
 
 /**
@@ -1439,7 +1451,7 @@ function languageRow(): HTMLElement {
     void save();
     applyLanguage();
   });
-  return h("div", { class: "row" }, h("label", { text: t("Language") }), select);
+  return setting(t("Language"), t("The language of Liv's windows and of the island."), select);
 }
 
 // ── Shortcuts section ─────────────────────────────────────────────────────────
@@ -1657,13 +1669,12 @@ function shortcutsSection(initial: ShortcutsReport | null): HTMLElement {
 /** Settings → General → Weekly recap. The prefs live with the history in Rust. */
 function recapRows(): HTMLElement[] {
   const T = {
-    label: t("Weekly recap"),
     keep: t("Keep a history of my coding sessions"),
     clear: t("Clear history"),
     cleared: t("History cleared."),
     about: t("Counts and project names only — never commands, files or prompts. Kept on this computer for 12 weeks."),
   };
-  const feedback = h("span", { class: "hint" });
+  const feedback = h("span", { class: "unit" });
   const sw = toggle(true, (v) => { void Bridge.recapSetEnabled(v); });
   void Bridge.recapPrefs().then((prefs) => {
     if (prefs) sw.classList.toggle("on", prefs.enabled);
@@ -1681,22 +1692,7 @@ function recapRows(): HTMLElement[] {
       }, 2400);
     },
   }) as HTMLButtonElement;
-  return [
-    h("div", { class: "row" },
-      h("label", { text: T.label }),
-      sw,
-      h("span", { class: "hint", text: T.keep }),
-    ),
-    h("div", { class: "row" },
-      h("label", {}),
-      clearBtn,
-      feedback,
-    ),
-    h("div", { class: "row" },
-      h("label", {}),
-      h("span", { class: "hint", style: "flex:1 1 0;min-width:0", text: T.about }),
-    ),
-  ];
+  return [setting(T.keep, T.about, feedback, clearBtn, sw)];
 }
 
 // ── Language ──────────────────────────────────────────────────────────────────
@@ -1815,7 +1811,9 @@ async function render() {
   toolsSync = null;
   clear(root);
   const sections: Partial<Record<PageId, () => HTMLElement[]>> = {
-    general: () => [generalSection(), appearanceBox(), toolsSection()],
+    general: pageGeneral,
+    island: pageIsland,
+    appearance: pageAppearance,
     pills: () => [activePillsSection(connected)],
     agents: () => [claudeSection(status), agentsSection(agents), planSection(status)],
     chat: () => [subscriptionsSection(), apiSection(hasKey, claudeRelay), chatProvidersSection(chatKeys, keyChanged), localSection(customKey)],

@@ -21,7 +21,9 @@ interface PageDef {
 }
 
 export const ISLAND_PAGES: PageDef[] = [
-  { id: "general", icon: "gear", title: () => t("General"), subtitle: () => t("How the island looks and behaves.") },
+  { id: "general", icon: "gear", title: () => t("General"), subtitle: () => t("Sound, language, startup and updates.") },
+  { id: "island", icon: "sliders", title: () => t("Island"), subtitle: () => t("When it opens, when it folds and what it tells you.") },
+  { id: "appearance", icon: "shapes", title: () => t("Appearance"), subtitle: () => t("The island's size and shape, and what Liv wears.") },
   { id: "pills", icon: "grid", title: () => t("Active pills"), subtitle: () => t("The pills shown in the island and their colours.") },
   { id: "agents", icon: "terminal", title: () => t("Agents"), subtitle: () => t("Claude Code, Codex and the other agents Liv follows.") },
   { id: "chat", icon: "chat", title: () => t("Chat"), subtitle: () => t("The AI of the island's chat, with your own keys.") },
@@ -149,7 +151,7 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
     }
     return heading;
   };
-  const islandGroup = group(t("Island"), ISLAND_PAGES);
+  const islandGroup = group(t("Settings"), ISLAND_PAGES);
 
   function renderSearchResults() {
     clear(resultsContainer);
@@ -234,7 +236,7 @@ export async function startHub(root: HTMLElement, opts: HubOptions) {
         const label = labels.get(p.id);
         if (label) label.textContent = p.title();
       }
-      islandGroup.textContent = t("Island");
+      islandGroup.textContent = t("Settings");
       void show(current);
     },
   };

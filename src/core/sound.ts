@@ -14,6 +14,13 @@ export const SOUND_NAMES = [
 
 export type SoundName = (typeof SOUND_NAMES)[number];
 
+/** The formats Settings names for a sound of the user's own (sounds.rs reads a few more). */
+export const SOUND_FORMATS = ["wav", "mp3", "ogg", "m4a", "aac", "flac"] as const;
+
+/** What Settings lists under "Your own sounds": the name a file may have, then the formats. */
+export const soundFilesHint = (): string =>
+  `${SOUND_NAMES.join(", ")} · ${SOUND_FORMATS.map((format) => `.${format}`).join(" ")}`;
+
 class SoundEngine {
   enabled = true;
   volume = 0.12;

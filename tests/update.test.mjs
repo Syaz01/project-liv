@@ -157,7 +157,7 @@ test("Settings shows its Updates rows only when there is a release channel", asy
   const settings = await import("../src/settings/updates.ts");
   const rows = settings.updateRows(() => document.createElement("button"), "0.1.0");
   await new Promise((done) => setTimeout(done, 0));
-  assert.equal(rows.length, 4);
+  assert.equal(rows.length, 2);
   assert.ok(rows.every((row) => row.style.display === "none"), "no release channel: no rows");
   settings.updatesListener({ ...ON, current: "0.1.0" });
   assert.ok(rows.every((row) => row.style.display === ""));

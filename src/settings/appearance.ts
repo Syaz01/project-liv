@@ -1,4 +1,4 @@
-// Settings → General → Appearance: the shape of the open island. Four sliders
+// Settings → Appearance → Shape of the open island. Four sliders
 // — its width, what is added to every view's height, the rounding of its
 // corners, the whole island's opacity — each with its value next to it, and
 // "Reset", which puts back the inherited island (core/appearance.ts has the
@@ -111,12 +111,13 @@ export function appearanceSection(settings: () => Settings, save: () => unknown)
 
   const el = h(
     "section",
-    { "data-anchor": "general.appearance" },
-    h("h2", {}, h("span", { text: t("Appearance") })),
-    h("div", {
-      class: "hint",
-      text: t("Island size, in General, makes the whole island bigger. These change the shape of the open island."),
-    }),
+    { class: "group", "data-anchor": "appearance.shape" },
+    h(
+      "div",
+      { class: "group-head" },
+      h("h2", {}, h("span", { text: t("Shape of the open island") })),
+      h("p", { class: "group-about", text: t("How wide, tall and round the open island is, and how see-through.") }),
+    ),
     ...rows.map((row) => row.el),
     h("div", { class: "row" }, h("label", { style: LABEL_STYLE }), reset),
   );

@@ -1,4 +1,4 @@
-// Settings → General → Appearance (src/settings/appearance.ts), drawn on the
+// Settings → Appearance → Shape of the open island (src/settings/appearance.ts), drawn on the
 // fake DOM: four sliders at the saved values, each with its value next to it;
 // a slider that moves is followed by the island at once and saved a moment
 // after it stops; Reset puts the inherited island back. What it asks of Rust
@@ -63,8 +63,8 @@ beforeEach(() => {
 
 test("four sliders, each with its range, at the inherited island on a fresh install", () => {
   const ui = open();
-  assert.equal(ui.section.el.getAttribute("data-anchor"), "general.appearance");
-  assert.equal(ui.section.el.find("H2")[0].textContent, "Appearance");
+  assert.equal(ui.section.el.getAttribute("data-anchor"), "appearance.shape");
+  assert.equal(ui.section.el.find("H2")[0].textContent, "Shape of the open island");
   assert.deepEqual(ui.labels(), ["Width", "Extra height", "Corner rounding", "Opacity"]);
   assert.deepEqual(ui.values(), ["640", "0", "22", "100"]);
   assert.deepEqual(ui.shown(), ["640 px", "0 px", "22 px", "100 %"]);
@@ -77,8 +77,8 @@ test("four sliders, each with its range, at the inherited island on a fresh inst
     );
     assert.equal(slider.getAttribute("aria-label"), ui.labels()[i]);
   });
-  // One line says what Island size is for, and what these are for.
-  assert.match(ui.section.el.find(".hint")[0].textContent, /^Island size, in General, makes the whole island bigger\./);
+  // One line under the title says what the sliders are for.
+  assert.equal(ui.section.el.find(".group-about")[0].textContent, "How wide, tall and round the open island is, and how see-through.");
   assert.equal(ui.reset().textContent, "Reset");
   // Drawing it asks nothing of Rust and writes nothing.
   assert.deepEqual(calls, []);
@@ -212,9 +212,9 @@ test("a change made elsewhere reaches the sliders, except the one under the poin
 test("in Spanish the section reads in Spanish", () => {
   setLanguage("es");
   const ui = open({ islandOpacity: 80 });
-  assert.equal(ui.section.el.find("H2")[0].textContent, "Apariencia");
+  assert.equal(ui.section.el.find("H2")[0].textContent, "Forma de la isla abierta");
   assert.deepEqual(ui.labels(), ["Ancho", "Alto adicional", "Redondeo de las esquinas", "Opacidad"]);
   assert.equal(ui.reset().textContent, "Restablecer");
-  assert.match(ui.section.el.find(".hint")[0].textContent, /^«Tamaño de la isla», en General, agranda toda la isla\./);
+  assert.equal(ui.section.el.find(".group-about")[0].textContent, "El ancho, el alto y el redondeo de la isla abierta, y su transparencia.");
   assert.deepEqual(ui.shown(), ["640 px", "0 px", "22 px", "80 %"]);
 });

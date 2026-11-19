@@ -7,7 +7,7 @@ import { OFFICE_PILL_ID } from "./office";
 import { pillDefinition } from "./pills";
 import { providerDef } from "./providers";
 
-export const SETTINGS_PAGES = ["general", "pills", "agents", "chat", "integrations", "shortcuts"] as const;
+export const SETTINGS_PAGES = ["general", "island", "appearance", "pills", "agents", "chat", "integrations", "shortcuts"] as const;
 export type SettingsPage = (typeof SETTINGS_PAGES)[number];
 
 export interface SettingsTarget {

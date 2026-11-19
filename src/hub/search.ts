@@ -104,32 +104,76 @@ const pillNames = (services: boolean) =>
 export const SETTINGS_ENTRIES: SettingsSearchEntry[] = [
   // ── General ──
   {
-    id: "general.general",
+    id: "general.sound",
     page: "general",
-    title: N_("General"),
-    terms: [
-      N_("Sound"), N_("Volume"), N_("Open sounds folder"), N_("Reload sounds"),
-      N_("Open on hover"), N_("Fold as the pointer leaves"), N_("Open for every pill’s alerts"), N_("Show clock in the island"),
-      N_("Closed island shows"), N_("Hide the island"), N_("Auto-close"), N_("Compact island closes"),
-      N_("Show the island when music starts"), N_("Tell me when a download finishes"),
-      N_("Island lives on"), N_("Island size"), N_("Hide when an app is full screen"),
-      N_("Liv on the desktop"), N_("Liv wears"), N_("Launch at startup"), N_("Open this window when Liv starts"),
-      N_("Weekly recap"), N_("Clear history"), N_("Updates"), N_("Check now"), N_("Language"),
-    ],
+    title: N_("Sound"),
+    terms: [N_("Volume"), N_("Your own sounds"), N_("Open sounds folder"), N_("Reload sounds")],
   },
-
   {
-    id: "general.appearance",
+    id: "general.startup",
     page: "general",
-    title: N_("Appearance"),
-    terms: [N_("Width"), N_("Extra height"), N_("Corner rounding"), N_("Opacity"), N_("Reset")],
+    title: N_("Language and startup"),
+    terms: [N_("Language"), N_("Launch at startup"), N_("Open this window when Liv starts")],
   },
-
+  {
+    id: "general.updates",
+    page: "general",
+    title: N_("Updates and history"),
+    terms: [N_("Tell me when a new version is out"), N_("Check now"), N_("Keep a history of my coding sessions"), N_("Clear history")],
+  },
   {
     id: "general.tools",
     page: "general",
     title: N_("Tools"),
     terms: [N_("Clipboard history"), N_("Screenshots"), N_("Open screenshots folder")],
+  },
+
+  // ── Island ──
+  {
+    id: "island.open",
+    page: "island",
+    title: N_("Opening and folding"),
+    terms: [N_("Open on hover"), N_("Fold as the pointer leaves"), N_("Auto-close"), N_("Compact island closes")],
+  },
+  {
+    id: "island.alerts",
+    page: "island",
+    title: N_("Alerts"),
+    terms: [
+      N_("Open for every pill’s alerts"), N_("Show the island when music starts"), N_("Tell me when a download finishes"),
+    ],
+  },
+  {
+    id: "island.shows",
+    page: "island",
+    title: N_("What it shows"),
+    terms: [N_("Show clock in the island"), N_("Closed island shows"), N_("Hide the island")],
+  },
+  {
+    id: "island.where",
+    page: "island",
+    title: N_("Where it lives"),
+    terms: [N_("Island lives on"), N_("Hide when an app is full screen")],
+  },
+
+  // ── Appearance ──
+  {
+    id: "appearance.size",
+    page: "appearance",
+    title: N_("Size"),
+    terms: [N_("Island size")],
+  },
+  {
+    id: "appearance.shape",
+    page: "appearance",
+    title: N_("Shape of the open island"),
+    terms: [N_("Width"), N_("Extra height"), N_("Corner rounding"), N_("Opacity"), N_("Reset")],
+  },
+  {
+    id: "appearance.liv",
+    page: "appearance",
+    title: N_("Liv"),
+    terms: [N_("Liv wears"), N_("Liv on the desktop")],
   },
 
   // ── Active pills ──

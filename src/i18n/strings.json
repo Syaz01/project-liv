@@ -166,9 +166,6 @@
     "Draft": {
       "es": "Borrador"
     },
-    "Liv has its own sounds. To replace one, put a file named peek, open, close, blip, tick, pop, send, work, finish, error, approval, question, approve or rate (.wav, .mp3, .ogg, .m4a, .aac or .flac) in the sounds folder, then Reload.": {
-      "es": "Liv trae sus propios sonidos. Para sustituir uno, deja en la carpeta de sonidos un archivo llamado peek, open, close, blip, tick, pop, send, work, finish, error, approval, question, approve o rate (.wav, .mp3, .ogg, .m4a, .aac o .flac) y haz clic en Recargar."
-    },
     "Drop a file, or ask me anything.": {
       "es": "Suelta un archivo o pregúntame lo que quieras."
     },
@@ -201,9 +198,6 @@
     },
     "Hooks not installed": {
       "es": "Hooks no instalados"
-    },
-    "Hovering the island opens it; it folds again shortly after the pointer leaves.": {
-      "es": "Pasar el puntero por la isla la abre; se pliega poco después de que el puntero salga."
     },
     "Install it": {
       "es": "Instalarlo"
@@ -529,9 +523,6 @@
     "Update now": {
       "es": "Actualizar ahora"
     },
-    "Updates": {
-      "es": "Actualizaciones"
-    },
     "Uploading {name}": {
       "es": "Subiendo {name}"
     },
@@ -558,9 +549,6 @@
     },
     "What should Claude do?": {
       "es": "¿Qué debe hacer Claude?"
-    },
-    "When a pill other than the one shown finishes or hits an error, the island shows it for a moment, then the pill you had comes back.": {
-      "es": "Cuando otra píldora distinta de la mostrada termina o da un error, la isla la muestra un momento y luego vuelve la tuya."
     },
     "Where you code": {
       "es": "Dónde programas"
@@ -1318,17 +1306,8 @@
     "Fold as the pointer leaves": {
       "es": "Plegar al salir el puntero"
     },
-    "The open island folds as soon as the pointer leaves it, clicked or not. Off, it waits the auto-close time below.": {
-      "es": "La isla abierta se pliega en cuanto el puntero la deja, hayas hecho clic o no. Desactivado, espera el tiempo de cierre automático de abajo."
-    },
-    "How long the open island stays once the pointer is gone. With folding as the pointer leaves, only when it opened on its own: an alert, a shortcut.": {
-      "es": "Cuánto se queda abierta la isla cuando el puntero ya no está. Con el plegado al salir el puntero, solo cuenta cuando se abre sola: un aviso, un atajo."
-    },
     "Compact island closes": {
       "es": "La isla compacta se cierra"
-    },
-    "Folded, the island stays compact for this long, then closes to the small one at the top of the screen.": {
-      "es": "Al plegarse, la isla se queda compacta ese tiempo y después se cierra a la pequeña de lo alto de la pantalla."
     },
     "At once": {
       "es": "Al instante"
@@ -1344,9 +1323,6 @@
     },
     "Tell me when a download finishes": {
       "es": "Avisarme cuando termine una descarga"
-    },
-    "When your browser finishes a download in your Downloads folder, the island shows it: open it, show it in its folder, or put it on the shelf. Liv only looks at the names in that folder; nothing leaves your PC.": {
-      "es": "Cuando tu navegador termina una descarga en tu carpeta Descargas, la isla la muestra: ábrela, muéstrala en su carpeta o ponla en la repisa. Liv solo mira los nombres de esa carpeta; nada sale de tu PC."
     },
     "Download finished": {
       "es": "Descarga terminada"
@@ -1368,9 +1344,6 @@
     },
     "Show the island when music starts": {
       "es": "Mostrar la isla al empezar la música"
-    },
-    "When something starts playing, the closed island shows itself compact. Off, it stays closed.": {
-      "es": "Cuando algo empieza a sonar, la isla cerrada se muestra compacta. Desactivado, se queda cerrada."
     },
     "settings.json: {what} has an unexpected type — Liv has not touched it.": {
       "es": "settings.json: {what} tiene un tipo inesperado — Liv no lo ha tocado."
@@ -1482,9 +1455,6 @@
     },
     "The numbers come from the Claude Code command-line tool. The Claude desktop app does not report them, so the gauge stays empty if you only use the desktop app.": {
       "es": "Los datos vienen de la herramienta de línea de comandos de Claude Code. La app de escritorio de Claude no los envía, así que el indicador queda vacío si solo usas la app de escritorio."
-    },
-    "How the island looks and behaves.": {
-      "es": "Cómo se ve y se comporta la isla."
     },
     "The pills shown in the island and their colours.": {
       "es": "Las píldoras que muestra la isla y sus colores."
@@ -1617,9 +1587,6 @@
     },
     "Show in compact island": {
       "es": "Mostrar en la isla compacta"
-    },
-    "Once closed, a small island stays at the top of the screen. Hover it to bring Liv back. If hidden, move the pointer to the middle of the top edge of the screen.": {
-      "es": "Al cerrarse, una isla pequeña se queda arriba de la pantalla. Pasa el puntero por encima para recuperar Liv. Si está oculta, lleva el puntero al centro del borde superior de la pantalla."
     },
     "Claude usage": {
       "es": "Uso de Claude"
@@ -1897,17 +1864,11 @@
     "Open screenshots folder": {
       "es": "Abrir la carpeta de capturas"
     },
-    "Screenshots are saved as PNG in the Liv folder inside Pictures. Each one is also copied to the clipboard and put on the shelf.": {
-      "es": "Las capturas se guardan como PNG en la carpeta Liv, dentro de Imágenes. Cada una también se copia al portapapeles y se pone en la repisa."
-    },
     "AI": {
       "es": "IA"
     },
     "Appearance": {
       "es": "Apariencia"
-    },
-    "Island size, in General, makes the whole island bigger. These change the shape of the open island.": {
-      "es": "«Tamaño de la isla», en General, agranda toda la isla. Estos ajustes cambian la forma de la isla abierta."
     },
     "Width": {
       "es": "Ancho"
@@ -1923,6 +1884,93 @@
     },
     "Reset": {
       "es": "Restablecer"
+    },
+    "Your own sounds": {
+      "es": "Tus propios sonidos"
+    },
+    "Language and startup": {
+      "es": "Idioma y arranque"
+    },
+    "Opening and folding": {
+      "es": "Abrir y plegar"
+    },
+    "Alerts": {
+      "es": "Avisos"
+    },
+    "What it shows": {
+      "es": "Qué muestra"
+    },
+    "Where it lives": {
+      "es": "Dónde vive"
+    },
+    "Size": {
+      "es": "Tamaño"
+    },
+    "Shape of the open island": {
+      "es": "Forma de la isla abierta"
+    },
+    "Sound, language, startup and updates.": {
+      "es": "Sonido, idioma, arranque y actualizaciones."
+    },
+    "When it opens, when it folds and what it tells you.": {
+      "es": "Cuándo se abre, cuándo se pliega y de qué te avisa."
+    },
+    "The island's size and shape, and what Liv wears.": {
+      "es": "El tamaño y la forma de la isla, y lo que lleva Liv."
+    },
+    "How wide, tall and round the open island is, and how see-through.": {
+      "es": "El ancho, el alto y el redondeo de la isla abierta, y su transparencia."
+    },
+    "To replace a sound, put a file with its name in the sounds folder, then reload.": {
+      "es": "Para cambiar un sonido, pon en la carpeta de sonidos un archivo con su nombre y recarga."
+    },
+    "Liv's sounds, and how loud they are.": {
+      "es": "Los sonidos de Liv y su volumen."
+    },
+    "Liv starts when you sign in to Windows.": {
+      "es": "Liv arranca cuando inicias sesión en Windows."
+    },
+    "Resting the pointer on the island opens it.": {
+      "es": "Dejar el puntero sobre la isla la abre."
+    },
+    "The island folds as soon as the pointer leaves it. Off, it waits the auto-close time.": {
+      "es": "La isla se pliega en cuanto el puntero la deja. Desactivado, espera el tiempo de cierre automático."
+    },
+    "How long the island stays open with the pointer away.": {
+      "es": "Cuánto se queda abierta la isla con el puntero fuera."
+    },
+    "After folding, how long it stays compact before it closes to the small one.": {
+      "es": "Tras plegarse, cuánto se queda compacta antes de cerrarse a la pequeña."
+    },
+    "When another pill finishes or fails, the island shows it for a moment.": {
+      "es": "Cuando otra píldora termina o falla, la isla la muestra un momento."
+    },
+    "The closed island shows itself when something starts playing.": {
+      "es": "La isla cerrada se muestra cuando algo empieza a sonar."
+    },
+    "The island shows the file when your browser finishes a download. Liv only looks at the names in your Downloads folder.": {
+      "es": "La isla muestra el archivo cuando tu navegador termina una descarga. Liv solo mira los nombres de tu carpeta Descargas."
+    },
+    "What stays at the top of the screen when the island closes. If you hide it, move the pointer to the middle of the top edge to bring it back.": {
+      "es": "Lo que queda arriba de la pantalla cuando la isla se cierra. Si la ocultas, lleva el puntero al centro del borde superior para recuperarla."
+    },
+    "The display the island sits on.": {
+      "es": "La pantalla donde está la isla."
+    },
+    "When the island opens, and how long it stays.": {
+      "es": "Cuándo se abre la isla y cuánto se queda."
+    },
+    "What makes the island show itself.": {
+      "es": "Qué hace que la isla se muestre."
+    },
+    "Saved as PNG in the Liv folder inside Pictures. Each one is also copied to the clipboard and put on the shelf.": {
+      "es": "Se guardan como PNG en la carpeta Liv dentro de Imágenes. Cada una se copia también al portapapeles y va a la repisa."
+    },
+    "The language of Liv's windows and of the island.": {
+      "es": "El idioma de las ventanas de Liv y de la isla."
+    },
+    "Updates and history": {
+      "es": "Actualizaciones e historial"
     }
   }
 }

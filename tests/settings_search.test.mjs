@@ -202,11 +202,16 @@ test("a link to a section of a page opens that page", async () => {
 // ── Searching ─────────────────────────────────────────────────────────────────
 
 test("a search finds what Liv has, by what its pages say", () => {
-  assert.deepEqual(found("sound"), ["general.general|Sound"]);
-  assert.deepEqual(found("volume"), ["general.general|Volume"]);
-  assert.deepEqual(found("island size"), ["general.general|Island size"]);
-  assert.deepEqual(found("full screen"), ["general.general|Hide when an app is full screen"]);
-  assert.deepEqual(found("language"), ["general.general|Language"]);
+  assert.deepEqual(found("sound"), ["general.sound"]);
+  assert.deepEqual(found("volume"), ["general.sound|Volume"]);
+  assert.deepEqual(found("island size"), ["appearance.size|Island size"]);
+  assert.deepEqual(found("full screen"), ["island.where|Hide when an app is full screen"]);
+  assert.equal(found("language")[0], "general.startup");
+  // What the island does has a page of its own, and each kind of setting its card.
+  assert.deepEqual(found("folding"), ["island.open"]);
+  assert.deepEqual(found("download"), ["island.alerts|Tell me when a download finishes"]);
+  assert.deepEqual(found("auto-close"), ["island.open|Auto-close"]);
+  assert.deepEqual(found("corner"), ["appearance.shape|Corner rounding"]);
   // A section by its heading, with the others that mention the word after it.
   assert.equal(found("virtual office")[0], "integrations.office");
   assert.deepEqual(found("office address"), ["integrations.office|Office address"]);
@@ -235,8 +240,9 @@ test("nothing Liv does not have can be found", () => {
 
 test("a search in Spanish reads in Spanish, and never shows a key", async () => {
   await inLanguage("es", () => {
-    assert.deepEqual(found("sonido"), ["general.general|Sonido"]);
-    assert.deepEqual(found("volumen"), ["general.general|Volumen"]);
+    assert.deepEqual(found("sonido"), ["general.sound"]);
+    assert.deepEqual(found("volumen"), ["general.sound|Volumen"]);
+    assert.deepEqual(found("descarga"), ["island.alerts|Avisarme cuando termine una descarga"]);
     assert.equal(found("píldoras activas")[0], "pills.active");
     assert.equal(found("pildoras")[0], "pills.active", "without the accent too");
     assert.equal(found("oficina virtual")[0], "integrations.office");
@@ -259,7 +265,9 @@ test("a search in Spanish reads in Spanish, and never shows a key", async () => 
 
 test("a result says its page, and its section when that is another name", () => {
   const [sound] = search("sound");
-  assert.equal(hitSubtitle(sound, pageTitle("general")), "General", "the section is named like its page");
+  assert.equal(hitSubtitle(sound, pageTitle("general")), "General", "a section itself: just its page");
+  const [volume] = search("volume");
+  assert.equal(hitSubtitle(volume, pageTitle("general")), "General › Sound");
   const relay = search("install relay").find((hit) => hit.entry.id === "agents.plan");
   assert.equal(relay.id, "agents.plan|Install relay…");
   assert.equal(hitSubtitle(relay, pageTitle("agents")), "Agents › Plan usage");
@@ -269,14 +277,18 @@ test("a result says its page, and its section when that is another name", () => 
 
 // ── What Liv wears ────────────────────────────────────────────────────────────
 
-test("General has a row for what Liv wears, next to Liv on the desktop: the wardrobe's seven choices, saved on change", async () => {
+/** The row of the setting named `name` on the page shown (parts.ts: setting). */
+const settingRow = (name) =>
+  windowRoot.find(".setting").find((row) => row.find(".setting-name")[0].textContent === name);
+
+test("Appearance has a row for what Liv wears, next to Liv on the desktop: the wardrobe's seven choices, saved on change", async () => {
   const { OUTFIT_CHOICES } = await import("../src/robot/outfits.ts");
-  emit("hub-page", "general");
+  emit("hub-page", "appearance");
   await settle();
-  const labels = windowRoot.find("LABEL").map((label) => label.textContent);
-  assert.equal(labels.indexOf("Liv wears"), labels.indexOf("Liv on the desktop") + 1);
+  const names = windowRoot.find(".setting-name").map((name) => name.textContent);
+  assert.equal(names.indexOf("Liv on the desktop"), names.indexOf("Liv wears") + 1);
   // The page may be drawn again when the settings change: the row is looked up each time.
-  const row = () => windowRoot.find("LABEL").find((label) => label.textContent === "Liv wears").parentNode;
+  const row = () => settingRow("Liv wears");
   const select = row().find("SELECT")[0];
   const options = select.find("OPTION");
   assert.deepEqual(options.map((o) => o.getAttribute("value")), OUTFIT_CHOICES.map((c) => c.id));
@@ -301,27 +313,28 @@ test("General has a row for what Liv wears, next to Liv on the desktop: the ward
   await settle();
 
   // The search finds it, in both languages.
-  assert.ok(found("wears").includes("general.general|Liv wears"), JSON.stringify(found("wears")));
+  assert.ok(found("wears").includes("appearance.liv|Liv wears"), JSON.stringify(found("wears")));
   await inLanguage("es", async () => {
-    emit("hub-page", "general");
+    emit("hub-page", "appearance");
     await settle();
     assert.ok(search("lleva").some((hit) => hit.label === "Liv lleva"));
-    const spanish = windowRoot.find("LABEL").find((label) => label.textContent === "Liv lleva").parentNode.find("OPTION");
+    const spanish = settingRow("Liv lleva").find("OPTION");
     assert.deepEqual(spanish.map((o) => o.textContent), ["Auto", "Nada", "Gafas", "Bufanda", "Auriculares", "Gorro", "Estrella"]);
   });
 });
 
 // ── The tools ─────────────────────────────────────────────────────────────────
 
-test("General has a Tools section with the clipboard history's switch: on at first, saved on change, and found by the search", async () => {
+test("General has a Tools card with the clipboard history's switch: on at first, saved on change, and found by the search", async () => {
   emit("hub-page", "general");
   await settle();
   // The page may be drawn again when the settings change: the section is looked up each time.
   const section = () => windowRoot.find("SECTION").find((s) => s.getAttribute("data-anchor") === "general.tools");
   const toggle = () => section().find(".switch")[0];
-  const hints = () => section().find(".hint").map((hint) => hint.textContent);
+  /** What the clipboard's row says under its name, and the small print under that. */
+  const hints = () => [section().find(".setting-about")[0].textContent, section().find(".fine")[0].textContent];
   assert.equal(section().find("H2")[0].textContent, "Tools");
-  assert.deepEqual(section().find("LABEL").map((label) => label.textContent), ["Clipboard history", "Screenshots"]);
+  assert.deepEqual(section().find(".setting-name").map((name) => name.textContent), ["Clipboard history", "Screenshots"]);
   assert.ok(toggle().classList.contains("on"), "a fresh install keeps what is copied");
   // The hint names the shortcut that opens the view, and says where the history lives.
   assert.match(hints()[0], /press Ctrl\+Alt\+V,/);
@@ -357,11 +370,12 @@ test("the Tools section says where screenshots go, has the way to their folder, 
   await settle();
   const section = () => windowRoot.find("SECTION").find((s) => s.getAttribute("data-anchor") === "general.tools");
   const button = () => section().find("BUTTON").find((b) => b.textContent === t("Open screenshots folder"));
-  const hints = () => section().find(".hint").map((hint) => hint.textContent);
+  /** What the screenshots' row says under its name. */
+  const about = () => section().find(".setting-about")[1].textContent;
   assert.ok(button(), "the button is there");
   // Where they go, and what else happens to each.
-  assert.match(hints()[2], /saved as PNG in the Liv folder inside Pictures/);
-  assert.match(hints()[2], /copied to the clipboard and put on the shelf/);
+  assert.match(about(), /Saved as PNG in the Liv folder inside Pictures/);
+  assert.match(about(), /copied to the clipboard and put on the shelf/);
 
   const before = sent("open_captures_folder").length;
   const saved = sent("save_settings").length;
@@ -378,8 +392,8 @@ test("the Tools section says where screenshots go, has the way to their folder, 
     emit("hub-page", "general");
     await settle();
     assert.equal(button().textContent, "Abrir la carpeta de capturas");
-    assert.match(hints()[2], /dentro de Imágenes/);
-    assert.match(hints()[2], /se pone en la repisa/);
+    assert.match(about(), /dentro de Imágenes/);
+    assert.match(about(), /va a la repisa/);
     assert.deepEqual(found("carpeta de capturas"), ["general.tools|Abrir la carpeta de capturas"]);
     assert.ok(found("capturas").includes("general.tools|Capturas"));
   });
@@ -387,17 +401,33 @@ test("the Tools section says where screenshots go, has the way to their folder, 
 
 // ── The open island's shape ───────────────────────────────────────────────────
 
-test("General has an Appearance section between General and Tools: four sliders, followed by the island at once, saved a moment later, and found by the search", async () => {
+test("the three pages of Liv's own settings draw their cards in order, and every setting says what it does", async () => {
+  const anchors = async (page) => (await sectionsOf(page)).map((s) => s.getAttribute("data-anchor"));
+  assert.deepEqual(await anchors("general"), ["general.sound", "general.startup", "general.updates", "general.tools"]);
+  assert.deepEqual(await anchors("island"), ["island.open", "island.alerts", "island.shows", "island.where"]);
+  assert.deepEqual(await anchors("appearance"), ["appearance.size", "appearance.shape", "appearance.liv"]);
+  for (const page of ["general", "island", "appearance"]) {
+    await sectionsOf(page);
+    for (const row of windowRoot.find(".setting")) {
+      const name = row.find(".setting-name")[0].textContent;
+      assert.ok(name, `${page}: a setting without a name`);
+      assert.ok(row.find(".setting-about").length > 0, `${page}: "${name}" does not say what it does`);
+      assert.equal(row.find(".setting-control").length, 1, `${page}: "${name}"`);
+    }
+  }
+});
+
+test("Appearance has the open island's shape between its size and Liv: four sliders, followed by the island at once, saved a moment later, and found by the search", async () => {
   const { APPEARANCE_SAVE_DELAY_MS } = await import("../src/settings/appearance.ts");
-  const sections = await sectionsOf("general");
+  const sections = await sectionsOf("appearance");
   assert.deepEqual(
     sections.map((s) => s.getAttribute("data-anchor")),
-    ["general.general", "general.appearance", "general.tools"],
+    ["appearance.size", "appearance.shape", "appearance.liv"],
   );
   // The page may be drawn again when the settings change: the section is looked up each time.
-  const section = () => windowRoot.find("SECTION").find((s) => s.getAttribute("data-anchor") === "general.appearance");
+  const section = () => windowRoot.find("SECTION").find((s) => s.getAttribute("data-anchor") === "appearance.shape");
   const sliders = () => section().find("INPUT");
-  assert.equal(section().find("H2")[0].textContent, "Appearance");
+  assert.equal(section().find("H2")[0].textContent, "Shape of the open island");
   assert.deepEqual(section().find("LABEL").map((label) => label.textContent).filter(Boolean),
     ["Width", "Extra height", "Corner rounding", "Opacity"]);
   assert.deepEqual(sliders().map((slider) => slider.getAttribute("type")), ["range", "range", "range", "range"]);
@@ -424,7 +454,7 @@ test("General has an Appearance section between General and Tools: four sliders,
   emit("settings-changed", { islandWidth: 900, islandExtraHeight: 40, islandRadius: 30, islandOpacity: 55, language: "en" });
   await settle();
   assert.deepEqual(sliders().map((slider) => slider.value), ["900", "40", "30", "55"]);
-  assert.deepEqual(section().find(".hint").slice(1).map((hint) => hint.textContent), ["900 px", "40 px", "30 px", "55 %"]);
+  assert.deepEqual(section().find(".hint").map((hint) => hint.textContent), ["900 px", "40 px", "30 px", "55 %"]);
 
   // Reset: the inherited island, written at once.
   calls.length = 0;
@@ -437,21 +467,22 @@ test("General has an Appearance section between General and Tools: four sliders,
   emit("settings-changed", { islandWidth: 640, islandExtraHeight: 0, islandRadius: 22, islandOpacity: 100, language: "en" });
   await settle();
 
-  // The search finds the section and what is in it, in both languages.
-  assert.deepEqual(found("appearance"), ["general.appearance"]);
-  assert.ok(found("opacity").includes("general.appearance|Opacity"), JSON.stringify(found("opacity")));
-  assert.ok(found("corner").includes("general.appearance|Corner rounding"));
-  assert.ok(found("width").includes("general.appearance|Width"));
-  assert.ok(found("extra height").includes("general.appearance|Extra height"));
+  // The search finds the page's cards and what is in this one, in both languages.
+  assert.deepEqual(found("appearance"), ["appearance.size", "appearance.shape", "appearance.liv"]);
+  assert.deepEqual(found("shape"), ["appearance.shape"]);
+  assert.ok(found("opacity").includes("appearance.shape|Opacity"), JSON.stringify(found("opacity")));
+  assert.ok(found("corner").includes("appearance.shape|Corner rounding"));
+  assert.ok(found("width").includes("appearance.shape|Width"));
+  assert.ok(found("extra height").includes("appearance.shape|Extra height"));
   await inLanguage("es", async () => {
-    emit("hub-page", "general");
+    emit("hub-page", "appearance");
     await settle();
-    assert.equal(section().find("H2")[0].textContent, "Apariencia");
+    assert.equal(section().find("H2")[0].textContent, "Forma de la isla abierta");
     assert.deepEqual(section().find("LABEL").map((label) => label.textContent).filter(Boolean),
       ["Ancho", "Alto adicional", "Redondeo de las esquinas", "Opacidad"]);
-    assert.ok(search("apariencia").some((hit) => hit.id === "general.appearance"));
+    assert.ok(search("apariencia").some((hit) => hit.id === "appearance.shape"));
     assert.ok(search("opacidad").some((hit) => hit.label === "Opacidad"));
     assert.ok(search("redondeo").some((hit) => hit.label === "Redondeo de las esquinas"));
-    assert.ok(search("restablecer").some((hit) => hit.id.startsWith("general.appearance")));
+    assert.ok(search("restablecer").some((hit) => hit.id.startsWith("appearance.shape")));
   });
 });

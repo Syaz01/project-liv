@@ -12,6 +12,8 @@
   --mono: "Cascadia Mono", "Consolas", ui-monospace, monospace;
   --ink: #f5f6f8;
   --dim: #9398a1;
+  /* What explains a setting: a step brighter than --dim, to be read without effort. */
+  --soft: #a9aeb7;
   --dim-2: #6b7079;
   --bg: #0b0c0e;
   --card: #141518;
@@ -30,7 +32,7 @@
 body.settings-window {
   background: var(--bg);
   color: var(--ink);
-  font: 400 13px/1.45 var(--font);
+  font: 400 14px/1.5 var(--font);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
@@ -58,23 +60,119 @@ h1 .version {
 section {
   background: var(--card);
   border: 1px solid var(--hairline);
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 16px;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-section > h2 {
-  font: 600 13px var(--font);
+section > h2,
+.group-head > h2 {
+  font: 700 16px var(--font);
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
 .hint {
-  font: 400 12px var(--font);
-  color: var(--dim);
+  font: 400 13px/1.5 var(--font);
+  color: var(--soft);
+}
+
+/* ── A card of settings that belong together (parts.ts: group, setting) ──────
+   Each setting is a row: its name and what it does on the left, what changes
+   it on the right, a hairline between one and the next. */
+
+section.group {
+  gap: 0;
+  padding: 6px 22px 8px;
+}
+
+.group-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 0 14px;
+}
+
+.group-about {
+  font: 400 13.5px/1.45 var(--font);
+  color: var(--soft);
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  /* In a narrow window a wide control (four sizes, two buttons) goes under
+     its text instead of squeezing it into a column of three words. */
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  padding: 15px 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.setting-text {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.setting-name {
+  font: 600 14.5px/1.35 var(--font);
+  color: var(--ink);
+}
+
+.setting-about {
+  font: 400 13px/1.5 var(--font);
+  color: var(--soft);
+}
+
+.setting-about.warn {
+  color: var(--amber);
+}
+
+/* What only a few will look for: the names of the sound files, a privacy note. */
+.fine {
+  font: 400 12px/1.5 var(--font);
+  color: var(--dim-2);
+  margin-top: 2px;
+}
+
+.setting-control {
+  flex: 0 1 auto;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.unit {
+  font: 400 13px var(--font);
+  color: var(--soft);
+}
+
+/* The older rows (a label, then its control) inside a group: the sliders of
+   the island's shape, the updates, the weekly recap. */
+section.group > .row {
+  padding: 7px 0;
+}
+
+section.group > .group-head + .row {
+  border-top: 1px solid var(--hairline);
+  padding-top: 16px;
+}
+
+section.group > .row:last-child {
+  padding-bottom: 14px;
+}
+
+section.group > .setting:last-child {
+  padding-bottom: 14px;
 }
 
 .row {
@@ -85,9 +183,9 @@ section > h2 {
 }
 
 .row > label {
-  min-width: 132px;
-  color: var(--dim);
-  font-size: 12.5px;
+  min-width: 148px;
+  color: var(--soft);
+  font-size: 13.5px;
 }
 
 .spacer {
@@ -103,8 +201,8 @@ section > h2 {
 }
 
 button {
-  font: 500 12.5px var(--font);
-  padding: 7px 14px;
+  font: 500 13.5px var(--font);
+  padding: 8px 16px;
   border: 0;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.09);
@@ -150,11 +248,11 @@ code,
 
 .switch {
   position: relative;
-  width: 36px;
-  height: 20px;
-  border-radius: 10px;
+  width: 42px;
+  height: 24px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.15);
-  flex: 0 0 36px;
+  flex: 0 0 42px;
   padding: 0;
 }
 
@@ -165,17 +263,17 @@ code,
 .switch::after {
   content: "";
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.18s;
 }
 
 .switch.on::after {
-  transform: translateX(16px);
+  transform: translateX(18px);
 }
 
 input[type="range"] {
@@ -199,12 +297,12 @@ input[type="number"],
 input[type="text"],
 input[type="password"],
 select {
-  font: 400 12.5px var(--font);
+  font: 400 13.5px var(--font);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--hairline);
-  border-radius: 8px;
+  border-radius: 9px;
   color: var(--ink);
-  padding: 5px 8px;
+  padding: 7px 10px;
 }
 
 input::placeholder {

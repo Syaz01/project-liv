@@ -60,7 +60,7 @@ test("language redraw relabels sidebar nodes and preserves selection and navigat
     buttons[1].fire("click");
     await settle();
     assert.deepEqual(selected(), [buttons[1]]);
-    assert.equal(root.find("H1")[0].textContent, "Active pills");
+    assert.equal(root.find("H1")[0].textContent, "Island");
     calls.length = 0;
 
     for (const language of ["es", "en"]) {
@@ -69,10 +69,10 @@ test("language redraw relabels sidebar nodes and preserves selection and navigat
       assert.deepEqual(root.find(".hub-item"), buttons, "keep the existing buttons");
       assert.deepEqual(buttons.map((button) => button.find("SPAN")[0]), labels);
       assert.deepEqual(buttons.map((button) => button.textContent), pages.map((page) => page.title()));
-      assert.equal(groups[0].textContent, t("Island"));
+      assert.equal(groups[0].textContent, t("Settings"));
       assert.equal(root.find(".hub-brand")[0].find("CANVAS")[0], logo);
       assert.deepEqual(selected(), [buttons[1]]);
-      assert.equal(root.find("H1")[0].textContent, t("Active pills"));
+      assert.equal(root.find("H1")[0].textContent, t("Island"));
       assert.equal(document.documentElement.lang, language);
     }
     assert.deepEqual(calls, [], "redrawing must not save settings or request data");
@@ -89,7 +89,7 @@ test("the sidebar uses the selected language on its first render", async () => {
   const { root, off, buttons } = await openHub();
   try {
     assert.deepEqual(buttons.map((button) => button.textContent), pages.map((page) => page.title()));
-    assert.equal(root.find(".hub-group")[0].textContent, "Isla");
+    assert.equal(root.find(".hub-group")[0].textContent, "Ajustes");
   } finally {
     off();
   }
