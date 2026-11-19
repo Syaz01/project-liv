@@ -2,6 +2,55 @@
   "about": "What's new, shown once in the island after Liv is updated (src/whats-new/). Every release adds its entry here, in English and Spanish: 1 to 4 items, a short title and one line each, an icon from ICON_NAMES (whats-new.ts). tests/whats-new.test.mjs checks the entry of the version that ships.",
   "releases": [
     {
+      "version": "0.1.3",
+      "items": [
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "Downloads in the island",
+            "es": "Descargas en la isla"
+          },
+          "detail": {
+            "en": "When your browser finishes a download, the island shows the file: open it, see it in its folder or put it on the shelf.",
+            "es": "Cuando tu navegador termina una descarga, la isla muestra el archivo: ábrelo, velo en su carpeta o ponlo en la repisa."
+          }
+        },
+        {
+          "icon": "terminal",
+          "title": {
+            "en": "Settings that read at a glance",
+            "es": "Ajustes más fáciles de leer"
+          },
+          "detail": {
+            "en": "Bigger text and three pages — General, Island and Appearance — where every setting says what it does.",
+            "es": "Texto más grande y tres páginas —General, Isla y Apariencia— donde cada ajuste dice qué hace."
+          }
+        },
+        {
+          "icon": "clock",
+          "title": {
+            "en": "It folds the way you like",
+            "es": "Se pliega a tu manera"
+          },
+          "detail": {
+            "en": "Choose whether it folds as the pointer leaves, how long it stays compact, and whether music wakes it. It reopens where you left it.",
+            "es": "Elige si se pliega al salir el cursor, cuánto se queda compacta y si la música la despierta. Se reabre donde la dejaste."
+          }
+        },
+        {
+          "icon": "sparkles",
+          "title": {
+            "en": "No jump, no white edges",
+            "es": "Sin saltos ni bordes blancos"
+          },
+          "detail": {
+            "en": "The island's window no longer changes as it folds, so it wakes in place and without a flash.",
+            "es": "La ventana de la isla ya no cambia al plegarse: despierta en su sitio y sin destellos."
+          }
+        }
+      ]
+    },
+    {
       "version": "0.1.2",
       "items": [
         {
