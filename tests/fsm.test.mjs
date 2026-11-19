@@ -361,6 +361,101 @@ test("an unusable delay is ignored", () => {
   assert.equal(fsm.homeToPetitDelay, 15);
 });
 
+// ── Folding as the pointer leaves, switched off: the auto-close delay again ──
+
+test("fold on leave off: opened by a click, the island waits the auto-close delay", () => {
+  fsm.foldOnLeave = false;
+  fsm.homeToPetitDelay = 5;
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.mouseLeft();
+  seconds(4.9);
+  assert.equal(fsm.state, "home");
+  seconds(0.1);
+  assert.equal(fsm.state, "petit");
+});
+
+test("fold on leave off: a hover-opened island folds after the grace, until something is clicked in it", () => {
+  fsm.foldOnLeave = false;
+  fsm.openOnHover = true;
+  fsm.homeToPetitDelay = 3;
+  fsm.mouseEntered();
+  seconds(0.5);
+  assert.ok(fsm.hoverOpened);
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+  // Opened again by the hover, and clicked: an ordinary open island.
+  fsm.mouseEntered();
+  seconds(0.5);
+  fsm.mouseLeft();
+  fsm.userInteracted(); // the short countdown becomes the normal one
+  assert.ok(!fsm.hoverOpened);
+  seconds(1);
+  assert.equal(fsm.state, "home");
+  seconds(2);
+  assert.equal(fsm.state, "petit");
+});
+
+test("the switch applies to the next time the pointer leaves", () => {
+  fsm.homeToPetitDelay = 5;
+  fsm.mouseEntered();
+  fsm.click();
+  fsm.foldOnLeave = false;
+  fsm.mouseLeft();
+  seconds(1);
+  assert.equal(fsm.state, "home");
+  fsm.mouseEntered();
+  fsm.foldOnLeave = true;
+  fsm.mouseLeft();
+  seconds(0.6);
+  assert.equal(fsm.state, "petit");
+});
+
+test("an island a hover opened says so until it is clicked or folds", () => {
+  fsm.openOnHover = true;
+  assert.ok(!fsm.hoverOpened);
+  fsm.mouseEntered();
+  seconds(0.5);
+  assert.ok(fsm.hoverOpened);
+  fsm.userInteracted();
+  assert.ok(!fsm.hoverOpened);
+  fsm.forcePetit();
+  fsm.mouseEntered();
+  fsm.click();
+  assert.ok(!fsm.hoverOpened, "a click is not a hover");
+});
+
+// ── How long the compact island stays ────────────────────────────────────────
+
+test("with no delay the compact island closes at once, from a fold or from a hover", () => {
+  fsm.petitToHiddenDelay = 0;
+  fsm.mouseEntered();
+  assert.equal(fsm.state, "petit");
+  seconds(600);
+  assert.equal(fsm.state, "petit", "it stays while the pointer is on it");
+  fsm.mouseLeft();
+  seconds(0);
+  assert.equal(fsm.state, "hidden");
+  // Folding from the open island: compact, and closed right after.
+  fsm.forceHome();
+  fsm.mouseLeft();
+  seconds(15);
+  assert.equal(fsm.state, "petit");
+  fsm.mouseLeft(); // what the island says as it becomes compact with the pointer elsewhere
+  seconds(0);
+  assert.equal(fsm.state, "hidden");
+});
+
+test("a chosen delay replaces the minute", () => {
+  fsm.petitToHiddenDelay = 5;
+  fsm.reveal();
+  seconds(4.9);
+  assert.equal(fsm.state, "petit");
+  seconds(0.1);
+  assert.equal(fsm.state, "hidden");
+});
+
 // ── Open on hover (IslandHoverTests.swift) ────────────────────────────────────
 
 test("open on hover off: hovering only peeks", () => {

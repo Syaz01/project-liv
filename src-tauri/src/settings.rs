@@ -19,6 +19,16 @@ pub struct Settings {
     /// Hovering the island opens it all the way, and it folds again shortly
     /// after the pointer leaves (the Mac's "Open on hover"). Off by default.
     pub open_on_hover: bool,
+    /// The open island folds as soon as the pointer leaves it; off, it waits
+    /// the auto-close delay (src/island/fsm.ts).
+    pub fold_on_leave: bool,
+    /// How long the compact island stays before it closes, in seconds; 0
+    /// closes it at once.
+    pub compact_close_delay: f64,
+    /// The closed island shows itself compact when something starts playing.
+    pub music_reveal: bool,
+    /// A download that finishes in the Downloads folder is told to the island (downloads.rs).
+    pub download_alerts: bool,
     pub alerts_from_all_pills: bool,
     pub active_integrations: Vec<String>,
     /// The always-on workspace pill (src/core/pills.ts checks it is one).
@@ -156,6 +166,10 @@ impl Default for Settings {
             sound_volume: 0.12,
             auto_close_interval: 15.0,
             open_on_hover: false,
+            fold_on_leave: true,
+            compact_close_delay: 60.0,
+            music_reveal: true,
+            download_alerts: true,
             alerts_from_all_pills: false,
             // Nothing declared: a fresh install shows the main pill alone, and
             // a service gets its pill once the user turns it on in Settings.
@@ -498,6 +512,10 @@ mod tests {
   "soundVolume": 0.5,
   "autoCloseInterval": 30.0,
   "openOnHover": true,
+  "foldOnLeave": false,
+  "compactCloseDelay": 5.0,
+  "musicReveal": false,
+  "downloadAlerts": false,
   "alertsFromAllPills": true,
   "activeIntegrations": ["integration_notion"],
   "mainPill": "agent_cursor",
@@ -1126,6 +1144,10 @@ mod tests {
                 "soundVolume",
                 "autoCloseInterval",
                 "openOnHover",
+                "foldOnLeave",
+                "compactCloseDelay",
+                "musicReveal",
+                "downloadAlerts",
                 "alertsFromAllPills",
                 "activeIntegrations",
                 "mainPill",

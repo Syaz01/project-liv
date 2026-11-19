@@ -34,8 +34,10 @@ export function applySpotify(island: SpotifyHost, next: SpotifyState) {
   // reads as Spotify's always did: everything on.
   Spotify.state = { ...IDLE_SPOTIFY, ...next, can: { ...ALL_CONTROLS, ...next.can } };
   syncPillName();
-  // Only on not playing → playing (SpotifyController.setPlaying).
-  if (!wasPlaying && State.spotifyPlaying && !State.paused && State.mode === "hidden") {
+  // Only on not playing → playing (SpotifyController.setPlaying), and only
+  // when Settings lets music bring the closed island out.
+  const shows = State.settings.musicReveal !== false;
+  if (shows && !wasPlaying && State.spotifyPlaying && !State.paused && State.mode === "hidden") {
     island.revealSilently();
   }
   State.notify();

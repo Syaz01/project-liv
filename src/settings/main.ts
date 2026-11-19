@@ -13,6 +13,7 @@ import {
 import { DEFAULT_SETTINGS, type Settings } from "../core/state";
 import { loadSubscriptions, pillTool, setSubscriptions } from "../core/subscriptions";
 import { closedIsland } from "../core/closed";
+import { COMPACT_CLOSE_CHOICES, compactCloseDelay } from "../core/sections";
 import { safeUrl } from "../core/office";
 import { guardPage } from "../core/guards";
 import { ISLAND_SCALES, clampedScale, islandScale, scaleLabel } from "../core/scale";
@@ -1121,6 +1122,32 @@ function generalSection(): HTMLElement {
     void save();
   });
 
+  // When the open island folds, and how long it stays compact before it closes.
+  const foldOnLeave = toggle(settings.foldOnLeave !== false, (v) => { settings.foldOnLeave = v; void save(); });
+  const compactClose = h("select", {}) as HTMLSelectElement;
+  const compactCloseLabel = (seconds: number) =>
+    seconds === 0
+      ? t("At once")
+      : seconds % 60 === 0
+        ? tn("After {count} minute", "After {count} minutes", seconds / 60)
+        : t("After {seconds} s", { seconds });
+  /** The choices, and the delay in force when it is none of them (a settings file edited by hand). */
+  const showCompactClose = () => {
+    const current = compactCloseDelay(settings.compactCloseDelay);
+    clear(compactClose);
+    for (const seconds of [...new Set([...COMPACT_CLOSE_CHOICES, current])].sort((a, b) => a - b)) {
+      compactClose.append(h("option", { value: String(seconds), text: compactCloseLabel(seconds) }));
+    }
+    compactClose.value = String(current);
+  };
+  showCompactClose();
+  compactClose.addEventListener("change", () => {
+    settings.compactCloseDelay = compactCloseDelay(Number(compactClose.value));
+    void save();
+  });
+  const musicReveal = toggle(settings.musicReveal !== false, (v) => { settings.musicReveal = v; void save(); });
+  const downloadAlerts = toggle(settings.downloadAlerts !== false, (v) => { settings.downloadAlerts = v; void save(); });
+
   // The closed island (core/closed.ts): what stays at the top of the screen.
   const closed = h("select", {}) as HTMLSelectElement;
   closed.append(
@@ -1228,6 +1255,10 @@ function generalSection(): HTMLElement {
   generalSync = () => {
     setSwitch(sound, settings.soundEnabled);
     setSwitch(openOnHover, settings.openOnHover);
+    setSwitch(foldOnLeave, settings.foldOnLeave !== false);
+    setSwitch(musicReveal, settings.musicReveal !== false);
+    setSwitch(downloadAlerts, settings.downloadAlerts !== false);
+    showCompactClose();
     setSwitch(petOut, settings.petOut);
     showPetHint();
     outfit.value = outfitChoice(settings.livOutfit);
@@ -1261,6 +1292,11 @@ function generalSection(): HTMLElement {
     ),
     h("div", { class: "hint", text: t("Hovering the island opens it; it folds again shortly after the pointer leaves.") }),
     h("div", { class: "row" },
+      h("label", { text: t("Fold as the pointer leaves") }),
+      foldOnLeave,
+    ),
+    h("div", { class: "hint", text: t("The open island folds as soon as the pointer leaves it, clicked or not. Off, it waits the auto-close time below.") }),
+    h("div", { class: "row" },
       h("label", { text: t("Open for every pill’s alerts") }),
       toggle(settings.alertsFromAllPills, (v) => { settings.alertsFromAllPills = v; void save(); }),
     ),
@@ -1278,8 +1314,24 @@ function generalSection(): HTMLElement {
     h("div", { class: "row" },
       h("label", { text: t("Auto-close") }),
       autoClose,
-      h("span", { class: "hint", text: t("seconds, when it opens on its own and the pointer stays away") }),
+      h("span", { class: "hint", text: t("seconds") }),
     ),
+    h("div", { class: "hint", text: t("How long the open island stays once the pointer is gone. With folding as the pointer leaves, only when it opened on its own: an alert, a shortcut.") }),
+    h("div", { class: "row" },
+      h("label", { text: t("Compact island closes") }),
+      compactClose,
+    ),
+    h("div", { class: "hint", text: t("Folded, the island stays compact for this long, then closes to the small one at the top of the screen.") }),
+    h("div", { class: "row" },
+      h("label", { text: t("Show the island when music starts") }),
+      musicReveal,
+    ),
+    h("div", { class: "hint", text: t("When something starts playing, the closed island shows itself compact. Off, it stays closed.") }),
+    h("div", { class: "row" },
+      h("label", { text: t("Tell me when a download finishes") }),
+      downloadAlerts,
+    ),
+    h("div", { class: "hint", text: t("When your browser finishes a download in your Downloads folder, the island shows it: open it, show it in its folder, or put it on the shelf. Liv only looks at the names in that folder; nothing leaves your PC.") }),
     h("div", { class: "row" },
       h("label", { text: t("Island lives on") }),
       screen,

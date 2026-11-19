@@ -28,6 +28,8 @@ import { autoCloseChoices } from "../core/autoclose";
 import { pillSettingsTarget, type SettingsTarget } from "../core/settings-target";
 import { loadSubscriptions, subscription } from "../core/subscriptions";
 import { addStars } from "./stars";
+import { Downloads, useDownload } from "../island/downloads";
+import { sizeLabel } from "../core/tools";
 import { buildRecap } from "./recap";
 import { buildUpdate } from "./update";
 import { buildWhatsNew } from "./whatsnew";
@@ -39,7 +41,7 @@ import { SPOTIFY_ID } from "../core/spotify";
 import { buildOfficeCard } from "./office";
 import { OFFICE_PILL_ID } from "../core/office";
 import type { Outfit, OutfitChoice } from "../robot/outfits";
-import { language, t, tl, type Msg } from "../i18n/i18n";
+import { language, t, tl, tn, type Msg } from "../i18n/i18n";
 import type { ViewCommand } from "../island/shortcuts";
 
 export interface ViewActions {
@@ -900,6 +902,61 @@ function buildFinished(actions: ViewActions): ViewHost {
   };
 }
 
+// ── A download that finished ──────────────────────────────────────────────────
+
+/**
+ * The card of the last download (island/downloads.ts): its name, its size, and
+ * what to do with it. The file is asked of Rust by the download's number; one
+ * that has gone since says so, and only the way to its folder is left.
+ */
+export function buildDownload(actions: ViewActions): ViewHost {
+  const who = h("div", { class: "who-row" });
+  const title = h("div", { class: "title one-line" });
+  const row = h("div", { class: "actions" });
+  const el = h("div", { class: "view" }, card("green", stack(116, 16, who, title, row)));
+  // Rebuilt only when what they act on changes: a button replaced between a
+  // mouse-down and a mouse-up would swallow the click.
+  let shown = "";
+  return {
+    el,
+    sync() {
+      const { latest, fresh, gone } = Downloads.state;
+      clear(who);
+      who.append(
+        dot("#22C55E", 8),
+        h("span", {
+          class: "n",
+          text: gone
+            ? t("The file is no longer there")
+            : fresh > 1
+              ? tn("{count} download finished", "{count} downloads finished", fresh)
+              : t("Download finished"),
+        }),
+        ...(latest && !gone ? [h("span", { text: sizeLabel(latest.size) })] : []),
+      );
+      title.textContent = latest?.name ?? t("No download yet.");
+      title.title = latest?.name ?? "";
+
+      const key = `${language()}|${latest?.id ?? 0}|${gone}`;
+      if (key === shown) return;
+      shown = key;
+      clear(row);
+      if (!latest) return;
+      const id = latest.id;
+      if (!gone) {
+        row.append(
+          btn(t("Open"), "primary", () => void useDownload("open", id).then((done) => done && actions.collapse())),
+          btn(t("Show in folder"), "secondary", () => void useDownload("reveal", id)),
+          // On the shelf it is at hand for later: the tools come up to show it there.
+          btn(t("To the shelf"), "secondary", () => void useDownload("shelve", id).then((done) => done && actions.setView("tools"))),
+        );
+      } else {
+        row.append(btn(tl("OK"), "secondary", () => actions.collapse()));
+      }
+    },
+  };
+}
+
 // ── Note ──────────────────────────────────────────────────────────────────────
 
 function buildNote(): ViewHost {
@@ -1021,6 +1078,7 @@ export function buildViews(
   map.set("finished", buildFinished(actions));
   map.set("note", buildNote());
   map.set("settings", buildSettings(actions));
+  map.set("download", buildDownload(actions));
   map.set("prompt", buildPrompt(onChatHeightChange));
   map.set("upload", buildUpload());
   map.set("uploading", buildUploading());

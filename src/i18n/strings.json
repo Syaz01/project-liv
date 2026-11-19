@@ -1312,8 +1312,65 @@
     "running": {
       "es": "en curso"
     },
-    "seconds, when it opens on its own and the pointer stays away": {
-      "es": "segundos, cuando se abre sola y no pasas el puntero por ella"
+    "seconds": {
+      "es": "segundos"
+    },
+    "Fold as the pointer leaves": {
+      "es": "Plegar al salir el puntero"
+    },
+    "The open island folds as soon as the pointer leaves it, clicked or not. Off, it waits the auto-close time below.": {
+      "es": "La isla abierta se pliega en cuanto el puntero la deja, hayas hecho clic o no. Desactivado, espera el tiempo de cierre automático de abajo."
+    },
+    "How long the open island stays once the pointer is gone. With folding as the pointer leaves, only when it opened on its own: an alert, a shortcut.": {
+      "es": "Cuánto se queda abierta la isla cuando el puntero ya no está. Con el plegado al salir el puntero, solo cuenta cuando se abre sola: un aviso, un atajo."
+    },
+    "Compact island closes": {
+      "es": "La isla compacta se cierra"
+    },
+    "Folded, the island stays compact for this long, then closes to the small one at the top of the screen.": {
+      "es": "Al plegarse, la isla se queda compacta ese tiempo y después se cierra a la pequeña de lo alto de la pantalla."
+    },
+    "At once": {
+      "es": "Al instante"
+    },
+    "After {seconds} s": {
+      "es": "Tras {seconds} s"
+    },
+    "After {count} minutes": {
+      "es": {
+        "one": "Tras {count} minuto",
+        "other": "Tras {count} minutos"
+      }
+    },
+    "Tell me when a download finishes": {
+      "es": "Avisarme cuando termine una descarga"
+    },
+    "When your browser finishes a download in your Downloads folder, the island shows it: open it, show it in its folder, or put it on the shelf. Liv only looks at the names in that folder; nothing leaves your PC.": {
+      "es": "Cuando tu navegador termina una descarga en tu carpeta Descargas, la isla la muestra: ábrela, muéstrala en su carpeta o ponla en la repisa. Liv solo mira los nombres de esa carpeta; nada sale de tu PC."
+    },
+    "Download finished": {
+      "es": "Descarga terminada"
+    },
+    "{count} downloads finished": {
+      "es": {
+        "one": "{count} descarga terminada",
+        "other": "{count} descargas terminadas"
+      }
+    },
+    "The file is no longer there": {
+      "es": "El archivo ya no está"
+    },
+    "No download yet.": {
+      "es": "Todavía no hay descargas."
+    },
+    "To the shelf": {
+      "es": "A la repisa"
+    },
+    "Show the island when music starts": {
+      "es": "Mostrar la isla al empezar la música"
+    },
+    "When something starts playing, the closed island shows itself compact. Off, it stays closed.": {
+      "es": "Cuando algo empieza a sonar, la isla cerrada se muestra compacta. Desactivado, se queda cerrada."
     },
     "settings.json: {what} has an unexpected type — Liv has not touched it.": {
       "es": "settings.json: {what} tiene un tipo inesperado — Liv no lo ha tocado."

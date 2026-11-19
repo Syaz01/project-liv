@@ -1,5 +1,6 @@
 // Entry point: boot the bridge, wire the island, show it.
 
+import { registerDownloadHandlers } from "./island/downloads";
 import "./style.css";
 import { Bridge, IS_TAURI, onEvent } from "./core/bridge";
 import { guardPage } from "./core/guards";
@@ -174,6 +175,7 @@ async function main() {
   registerShortcutHandlers(island, () => setPaused(false));
   registerSpotifyHandlers(island);
   registerToolsHandlers(island);
+  registerDownloadHandlers(island);
   // New versions: Rust offers the card, the island opens it when nothing else waits.
   await Updates.register(island);
   // Rust may have read Spotify before this page listened: ask once.

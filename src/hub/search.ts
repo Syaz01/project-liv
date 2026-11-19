@@ -109,8 +109,9 @@ export const SETTINGS_ENTRIES: SettingsSearchEntry[] = [
     title: N_("General"),
     terms: [
       N_("Sound"), N_("Volume"), N_("Open sounds folder"), N_("Reload sounds"),
-      N_("Open on hover"), N_("Open for every pill’s alerts"), N_("Show clock in the island"),
-      N_("Closed island shows"), N_("Hide the island"), N_("Auto-close"),
+      N_("Open on hover"), N_("Fold as the pointer leaves"), N_("Open for every pill’s alerts"), N_("Show clock in the island"),
+      N_("Closed island shows"), N_("Hide the island"), N_("Auto-close"), N_("Compact island closes"),
+      N_("Show the island when music starts"), N_("Tell me when a download finishes"),
       N_("Island lives on"), N_("Island size"), N_("Hide when an app is full screen"),
       N_("Liv on the desktop"), N_("Liv wears"), N_("Launch at startup"), N_("Open this window when Liv starts"),
       N_("Weekly recap"), N_("Clear history"), N_("Updates"), N_("Check now"), N_("Language"),

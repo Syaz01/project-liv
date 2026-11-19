@@ -130,6 +130,23 @@ test("the pill wears the track's title, and its own name when nothing plays", ()
   assert.equal(spotifyTask().name, "Music");
 });
 
+test("with the choice switched off in Settings, music starting leaves the closed island closed", () => {
+  State.settings = { ...State.settings, musicReveal: false };
+  emit("spotify", playing());
+  assert.equal(island.reveals, 0);
+  assert.equal(spotifyTask().name, "Get Lucky", "the pill still follows what plays");
+  // Switched on again, the next start shows it.
+  emit("spotify", { ...IDLE_SPOTIFY, running: true });
+  State.settings = { ...State.settings, musicReveal: true };
+  emit("spotify", playing());
+  assert.equal(island.reveals, 1);
+  // A settings file from before the choice: as it always was.
+  emit("spotify", { ...IDLE_SPOTIFY, running: true });
+  State.settings = { ...State.settings, musicReveal: undefined };
+  emit("spotify", playing());
+  assert.equal(island.reveals, 2);
+});
+
 test("music starting shows the hidden island once, silently; nothing when Spotify is not declared", () => {
   emit("spotify", playing({ playing: false }));
   assert.equal(island.reveals, 0);

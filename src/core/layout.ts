@@ -23,7 +23,8 @@ export type IslandViewName =
   | "whatsNew"
   | "launch"
   | "wardrobe"
-  | "tools";
+  | "tools"
+  | "download";
 
 export type BotStateName =
   | "idle"
@@ -90,6 +91,8 @@ export const VIEW_LAYOUTS: Record<IslandViewName, ViewLayout> = {
   question: { height: 160, botX: 62, botY: null, botDiameter: 56 },
   error: { height: 160, botX: 62, botY: null, botDiameter: 58 },
   finished: { height: 160, botX: 62, botY: null, botDiameter: 58 },
+  // A download that finished: Liv on the left, the file and what to do with it.
+  download: { height: 160, botX: 62, botY: null, botDiameter: 58 },
   upload: { height: 176, botX: 140, botY: 104, botDiameter: 62 },
   // botY 103 = bar top (42 + 58) + 3, so the dot really rides the bar. The Swift
   // layout says 118 while its own comment says 103; the comment matches the spec.

@@ -561,7 +561,7 @@ pub async fn shelf_drag(app: AppHandle, window: tauri::WebviewWindow, id: u64) -
 // ── Windows ───────────────────────────────────────────────────────────────────
 
 #[cfg(windows)]
-mod os {
+pub(crate) mod os {
     use super::*;
     use std::sync::mpsc;
 
@@ -726,7 +726,7 @@ mod os {
 }
 
 #[cfg(not(windows))]
-mod os {
+pub(crate) mod os {
     use super::*;
 
     pub fn open(_path: &str) -> bool {

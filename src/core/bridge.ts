@@ -318,6 +318,10 @@ export const Bridge = {
 
   // ── The shelf (src-tauri/src/shelf.rs), the island's alone ────────────────
   /** The list as it is now; `shelf` brings every change. Read it through shelfItems(). */
+  /** A download Rust announced, by its number: opened, shown in its folder, or put on the shelf. False when it has gone. */
+  downloadOpen: (id: number) => call<boolean>("download_open", { id }),
+  downloadReveal: (id: number) => call<boolean>("download_reveal", { id }),
+  downloadShelve: (id: number) => call<boolean>("download_shelve", { id }),
   shelfList: () => call<unknown>("shelf_list"),
   /** A file dropped on the shelf: Rust only takes a path that a real drop just delivered. */
   shelfAdd: (path: string) => call<void>("shelf_add", { path }),

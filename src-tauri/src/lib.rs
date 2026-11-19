@@ -12,6 +12,7 @@ mod cli_relay;
 mod clipboard;
 mod codex_plan;
 mod config_file;
+mod downloads;
 mod files;
 mod fullscreen;
 mod github;
@@ -242,6 +243,8 @@ fn save_settings(app: AppHandle, shared: State<Shared>, settings: Settings) {
     spotify::sync(&app, &settings.active_integrations);
     // "Clipboard history" switched: the listener starts, or ends and forgets.
     clipboard::sync(&app, settings.clipboard_history);
+    // "Tell me when a download finishes" switched.
+    downloads::sync(&app, settings.download_alerts);
     if shortcuts_changed {
         shortcuts::apply(&app, &settings.shortcuts);
     }
@@ -267,10 +270,11 @@ fn language_changed(app: &AppHandle) {
     tray::retitle(app);
 }
 
-/// Hidden island → the window is the closed island (the invisible wake strip
-/// when it shows nothing) — cut out of a window that keeps its size on Windows,
-/// shrunk to it elsewhere (island::apply_geometry) — and the cursor poll
-/// parks; anything else → full panel and 60 Hz polling.
+/// Hidden island → the cursor poll parks, and the window waits for the cursor
+/// on the closed island (the invisible wake strip when it shows nothing): on
+/// Windows it stays as it is and lets the mouse through, elsewhere it shrinks
+/// to the closed island (island::apply_geometry). Anything else → full panel
+/// and 60 Hz polling.
 #[tauri::command]
 fn set_collapsed(app: AppHandle, shared: State<Shared>, collapsed: bool, width: Option<f64>, height: Option<f64>) {
     shared.gate.collapsed.store(collapsed, Ordering::Relaxed);
@@ -286,7 +290,8 @@ fn set_collapsed(app: AppHandle, shared: State<Shared>, collapsed: bool, width: 
         shared.gate.set_active(false);
     }
     island::apply_geometry(&app);
-    // The closed island must always take the mouse, and a resize invalidates the flag.
+    // Folded, the closed island must be found by the mouse (or, in place, by the
+    // poll); open, the window takes the mouse until the next tick decides.
     island::refresh_click_through(&app, &shared.gate);
     shared.gate.set_active(!collapsed);
     platform::set_pointer_watch(!collapsed);
@@ -1142,6 +1147,9 @@ pub fn run() {
             spotify::spotify_refresh,
             spotify::spotify_control,
             spotify::spotify_open,
+            downloads::download_open,
+            downloads::download_reveal,
+            downloads::download_shelve,
             clipboard::clipboard_history,
             clipboard::clipboard_paste,
             clipboard::clipboard_remove,
@@ -1214,6 +1222,7 @@ pub fn run() {
             integrations::start(handle.clone());
             spotify::sync(&handle, &loaded.active_integrations);
             clipboard::sync(&handle, loaded.clipboard_history);
+            downloads::sync(&handle, loaded.download_alerts);
             // The shelf as it was left, minus what has gone since.
             shelf::start(&handle);
             shortcuts::apply(&handle, &loaded.shortcuts);

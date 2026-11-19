@@ -86,6 +86,14 @@ export interface Settings {
   autoCloseInterval: number;
   /** Hovering the island opens it all the way (off: hovering only peeks). */
   openOnHover: boolean;
+  /** The open island folds as soon as the pointer leaves it (off: after the auto-close delay). */
+  foldOnLeave: boolean;
+  /** How long the compact island stays before it closes, seconds; 0 closes it at once. */
+  compactCloseDelay: number;
+  /** Something starts playing: the closed island shows itself compact (off: it stays closed). */
+  musicReveal: boolean;
+  /** A download that finishes in the Downloads folder is shown on the island. */
+  downloadAlerts: boolean;
   /** Open the island for a moment when any pill finishes or hits an error. */
   alertsFromAllPills: boolean;
   /** Date and time in the middle of the compact island. */
@@ -173,6 +181,10 @@ export const DEFAULT_SETTINGS: Settings = {
   soundVolume: 0.12,
   autoCloseInterval: 15,
   openOnHover: false,
+  foldOnLeave: true,
+  compactCloseDelay: 60,
+  musicReveal: true,
+  downloadAlerts: true,
   alertsFromAllPills: false,
   showClock: false,
   closedIsland: "robot",
@@ -269,6 +281,8 @@ class AppState {
   uploadProgress = 0;
   uploadDuration = 2.4;
   fileDragOver = false;
+  /** The section the island was on when it last folded: it opens on it again (core/sections.ts). */
+  lastSection: IslandViewName | null = null;
   /** The session pill a dragged file is over on the drop card (Mac dropSessionTarget). */
   dropSessionTarget: string | null = null;
 

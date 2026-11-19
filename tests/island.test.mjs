@@ -131,8 +131,12 @@ beforeEach(() => {
   pointer(FAR);
   island.fsm.forceHidden();
   State.view = "overview";
+  State.lastSection = null;
   State.settings = { ...DEFAULT_SETTINGS };
   island.fsm.homeToPetitDelay = State.settings.autoCloseInterval;
+  island.fsm.openOnHover = false;
+  island.fsm.foldOnLeave = true;
+  island.fsm.petitToHiddenDelay = 60;
   State.loadIntegrationTasks();
   pass(2);
   calls.length = 0;
@@ -938,6 +942,100 @@ test("only the n8n pill's error card opens n8n; the Claude app's opens the Claud
   assert.equal(sent("open_claude_desktop").length, 1);
   assert.deepEqual(sent("open_session"), []);
   hook({ hook_event_name: "SessionEnd", session_id: "d1", liv_agent: "claude-desktop" });
+});
+
+// ── The island opens again where it was left ─────────────────────────────────
+
+test("folded on a section, the island opens on it again; a waiting card comes first", () => {
+  island.alert("overview");
+  island.setView("tools");
+  pass(0.2);
+  island.collapse();
+  pass(1);
+  assert.equal(State.mode, "compact");
+  assert.equal(State.lastSection, "tools");
+  // A click on the compact island: the tools again, not the overview.
+  pointer(ON_ISLAND);
+  mousedown(0);
+  pass(1);
+  assert.deepEqual([State.mode, State.view], ["expanded", "tools"]);
+
+  // Back on the overview, that is what it opens on.
+  island.setView("overview");
+  island.collapse();
+  pass(1);
+  assert.equal(State.lastSection, null);
+  mousedown(0);
+  pass(1);
+  assert.equal(State.view, "overview");
+
+  // Folded on the tools with a permission waiting: the card, whatever was remembered.
+  island.setView("tools");
+  island.collapse();
+  pass(1);
+  permission();
+  pass(0.5);
+  assert.equal(State.view, "approval");
+  island.foldApproval();
+  pass(1);
+  mousedown(0);
+  pass(1);
+  assert.equal(State.view, "approval");
+});
+
+test("a card that came up for something is not remembered: the island opens on the overview", () => {
+  island.alert("note");
+  pass(0.2);
+  island.collapse();
+  pass(1);
+  assert.equal(State.lastSection, null);
+  pointer(ON_ISLAND);
+  mousedown(0);
+  pass(1);
+  assert.equal(State.view, "overview");
+});
+
+test("a hover opening the island on the chat leaves the keyboard alone until a click", () => {
+  State.settings = { ...State.settings, openOnHover: true };
+  island.applyFoldSettings();
+  island.alert("prompt");
+  pass(0.3);
+  island.collapse();
+  pass(1);
+  calls.length = 0;
+  // The pointer rests on the compact island: it opens on the chat it was left on.
+  pointer(ON_ISLAND);
+  pass(1);
+  assert.deepEqual([State.mode, State.view], ["expanded", "prompt"]);
+  assert.ok(island.fsm.hoverOpened);
+  assert.ok(!keyboard().includes(true), "what is being typed elsewhere stays there");
+  // A click inside is the user coming to type.
+  mousedown(0);
+  pass(0.3);
+  assert.ok(keyboard().includes(true));
+});
+
+test("Settings decide when the island folds and how long it stays compact", () => {
+  State.settings = { ...State.settings, foldOnLeave: false, compactCloseDelay: 0, autoCloseInterval: 5 };
+  island.applyFoldSettings();
+  assert.deepEqual([island.fsm.foldOnLeave, island.fsm.petitToHiddenDelay, island.fsm.homeToPetitDelay], [false, 0, 5]);
+  // Opened by a click and left: the auto-close delay, then closed at once.
+  island.reveal();
+  pass(0.1);
+  pointer(ON_ISLAND);
+  mousedown(0);
+  pass(0.5);
+  assert.equal(State.mode, "expanded");
+  pointer(FAR);
+  pass(4);
+  assert.equal(State.mode, "expanded", "no folding as the pointer leaves");
+  pass(1.5);
+  assert.equal(State.mode, "hidden", "compact for no time at all");
+
+  // A settings file from before these choices: as the island always was, folding on leave.
+  State.settings = { ...DEFAULT_SETTINGS, foldOnLeave: undefined, compactCloseDelay: undefined };
+  island.applyFoldSettings();
+  assert.deepEqual([island.fsm.foldOnLeave, island.fsm.petitToHiddenDelay], [true, 60]);
 });
 
 // ── The header's office tab ──────────────────────────────────────────────────

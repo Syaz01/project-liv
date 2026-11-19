@@ -69,6 +69,9 @@ windows = { version = "0.61", features = [
   "Win32_System_Registry",
   "Win32_System_SystemInformation",
   "Win32_System_Threading",
+  # A download that finishes: waiting on the Downloads folder for a change of name (downloads.rs).
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_UI_Shell",
   # The shelf's "Show in folder": the item lists SHOpenFolderAndSelectItems takes (shelf.rs).

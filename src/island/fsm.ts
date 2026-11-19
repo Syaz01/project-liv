@@ -31,8 +31,19 @@ export class IslandStateMachine {
     this.homeDelay = seconds;
     if (this.state === "home" && this.homeCollapse != null) this.scheduleHomeCollapse();
   }
-  /** petit → hidden delay, seconds. */
+  /**
+   * petit → hidden delay, seconds (Settings → General): how long the compact
+   * island stays before it closes. 0 closes it at once.
+   */
   petitToHiddenDelay = 60;
+  /**
+   * Settings → General → Fold as the pointer leaves. On, an open island the
+   * pointer has been on folds once it leaves (`hoverCloseDelay`), whatever
+   * opened it and whatever was clicked in it. Off, leaving starts the
+   * auto-close delay instead — except for an island a hover opened, which
+   * folds after the short grace until something is clicked in it, as always.
+   */
+  foldOnLeave = true;
   /** An alert waiting for an answer stays open, even when the mouse leaves. */
   pinned = false;
   /**
@@ -66,6 +77,8 @@ export class IslandStateMachine {
   private inside = false;
   /** The pointer has been on the open island since it opened. */
   private visited = false;
+  /** Open because of a hover, until the user clicks inside it. */
+  private byHover = false;
   private petitHide: number | null = null;
   private homeCollapse: number | null = null;
   private hoverOpen: number | null = null;
@@ -127,9 +140,15 @@ export class IslandStateMachine {
     }
   }
 
+  /** Open because the pointer rested on it, and nothing was clicked in it yet. */
+  get hoverOpened(): boolean {
+    return this.state === "home" && this.byHover;
+  }
+
   click() {
     // Clicked with the pointer on it, as far as the island knows: it is visited.
     this.visited = this.visited || this.inside;
+    this.byHover = false;
     if (this.state !== "petit" && this.state !== "peek") return;
     this.cancelTimers();
     this.transition("home");
@@ -160,11 +179,16 @@ export class IslandStateMachine {
   }
 
   /**
-   * The user clicked inside the island: the pointer is on it. Clicking keeps
-   * nothing open — the island folds once the pointer leaves, as after a hover.
+   * The user clicked inside the island: the pointer is on it. Folding on
+   * leave, a click keeps nothing open. Otherwise it makes a hover-opened
+   * island an ordinary open one: the auto-close delay instead of the grace.
    */
   userInteracted() {
     this.visited = this.visited || this.inside;
+    if (!this.byHover) return;
+    this.byHover = false;
+    // The short countdown already running becomes the normal one.
+    if (!this.foldOnLeave && this.state === "home" && this.homeCollapse != null) this.scheduleHomeCollapse();
   }
 
   /** Alert or explicit request: open straight to expanded. */
@@ -172,6 +196,7 @@ export class IslandStateMachine {
     // Opened on its own: until the pointer comes, the auto-close delay counts.
     // Asked for with the pointer already on it (a tab, a button), it is visited.
     this.visited = this.inside;
+    this.byHover = false;
     this.cancelTimers();
     this.transition("home");
   }
@@ -179,12 +204,14 @@ export class IslandStateMachine {
   /// Explicit close (OK button, Escape, an alert being answered).
   forcePetit() {
     this.visited = false;
+    this.byHover = false;
     this.cancelTimers();
     this.transition("petit");
   }
 
   forceHidden() {
     this.visited = false;
+    this.byHover = false;
     this.cancelTimers();
     this.transition("hidden");
   }
@@ -205,7 +232,8 @@ export class IslandStateMachine {
   private scheduleHomeCollapse() {
     this.clear("homeCollapse");
     if (this.pinned) return;
-    const ms = (this.visited ? this.hoverCloseDelay : this.homeDelay) * 1000;
+    const soon = this.foldOnLeave ? this.visited : this.byHover;
+    const ms = (soon ? this.hoverCloseDelay : this.homeDelay) * 1000;
     this.homeCollapseDueAt = performance.now() + ms;
     this.homeCollapse = window.setTimeout(() => {
       this.homeCollapse = null;
@@ -213,6 +241,7 @@ export class IslandStateMachine {
       // An alert pinned while the countdown ran keeps the island open.
       if (this.state === "home" && !this.pinned) {
         this.visited = false;
+        this.byHover = false;
         this.transition("petit");
       }
     }, ms);
@@ -243,6 +272,7 @@ export class IslandStateMachine {
       if (this.state !== "petit" || this.pinned || !this.openOnHover) return;
       this.cancelTimers();
       this.visited = true;
+      this.byHover = true;
       this.transition("home");
     }, this.hoverOpenDelay * 1000);
   }

@@ -4,6 +4,7 @@
 import { Tracked, Spring } from "../core/anim";
 import { Bridge, IS_TAURI, onDragDrop, type DragDropPayload } from "../core/bridge";
 import { chatShell, towards } from "../core/chat-look";
+import { compactCloseDelay, reopensOn, sectionToRemember } from "../core/sections";
 import {
   DEFAULT_APPEARANCE, appearance, cornerRadius, islandShape, openHeight, panelSize, type Appearance,
 } from "../core/appearance";
@@ -478,9 +479,17 @@ export class Island {
 
   // ── FSM ─────────────────────────────────────────────────────────────────────
 
+  /** Settings → General: when the island opens, folds and closes. */
+  applyFoldSettings() {
+    const s = State.settings;
+    this.fsm.homeToPetitDelay = s.autoCloseInterval;
+    this.fsm.openOnHover = s.openOnHover;
+    this.fsm.foldOnLeave = s.foldOnLeave !== false;
+    this.fsm.petitToHiddenDelay = compactCloseDelay(s.compactCloseDelay);
+  }
+
   private wireFsm() {
-    this.fsm.homeToPetitDelay = State.settings.autoCloseInterval;
-    this.fsm.openOnHover = State.settings.openOnHover;
+    this.applyFoldSettings();
     State.onPinned = () => this.syncPin();
     this.fsm.onTransition = (from, to) => {
       switch (to) {
@@ -544,6 +553,8 @@ export class Island {
       // Another pill's alert borrowed the front: the pill you had comes back (Mac).
       restoreAlertFocus();
     }
+    // Folding from a section of its own (the tools, the chat…): it opens there again.
+    if (prev === "expanded" && mode !== "expanded") State.lastSection = sectionToRemember(State.view);
     // What Liv was doing for itself (a wave, hearts in the air) ends with what showed it.
     if (prev === "expanded" || prev === "peek") this.engine.calm();
     if (mode !== "expanded") {
@@ -674,7 +685,8 @@ export class Island {
    * permission or question always comes first.
    */
   private openingView(): IslandViewName {
-    return this.updateHintOn() ? "update" : State.defaultView();
+    if (this.updateHintOn()) return "update";
+    return reopensOn(State.lastSection, State.defaultView(), State.pendingApproval != null);
   }
 
   reveal() {
@@ -1329,8 +1341,14 @@ export class Island {
       // Only the main button opens the island or counts as using it.
       if (e.button !== 0) return;
       Sound.resume();
-      // A click makes a hover-opened island an ordinary open one.
+      // A click makes a hover-opened island an ordinary open one — and, on
+      // the chat it opened on, takes the keyboard it had left alone.
+      const hovered = this.fsm.hoverOpened;
       this.fsm.userInteracted();
+      if (hovered && TYPING_VIEWS.has(State.view)) {
+        this.dirty = true;
+        this.ensureRunning();
+      }
       if (State.mode !== "expanded") {
         this.fsm.click();
       } else if (this.pointerOnLiv() && !this.onControl(e.target)) {
@@ -1755,7 +1773,12 @@ export class Island {
     if (live && this.lastSyncedView !== State.view) {
       const wasChat = this.lastSyncedView != null && TYPING_VIEWS.has(this.lastSyncedView);
       this.lastSyncedView = State.view;
-      if (TYPING_VIEWS.has(State.view)) {
+      if (TYPING_VIEWS.has(State.view) && this.fsm.hoverOpened) {
+        // A pointer resting on the island opened it on the chat it was left
+        // on: what is being typed elsewhere stays there. A click inside takes
+        // the keyboard (the mousedown below asks again).
+        this.lastSyncedView = null;
+      } else if (TYPING_VIEWS.has(State.view)) {
         const view = State.view;
         void Bridge.focusWindow(true);
         window.setTimeout(() => this.views.get(view)?.focus?.(), 120);
@@ -1823,8 +1846,7 @@ export class Island {
     }
     Sound.setEnabled(State.settings.soundEnabled);
     Sound.setVolume(State.settings.soundVolume);
-    this.fsm.homeToPetitDelay = State.settings.autoCloseInterval;
-    this.fsm.openOnHover = State.settings.openOnHover;
+    this.applyFoldSettings();
     State.notify();
     // One timer for the life of the window; a minute is the clock's finest tick.
     this.clockTimer ??= window.setInterval(() => this.updateClock(), 10_000);
